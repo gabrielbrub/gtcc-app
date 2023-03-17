@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { HashRouter, Route, Routes } from 'react-router-dom'
-import Admin from './admin'
+import AdminWrapper from './admin/adminWrapper'
 import ContractSelection from './admin/contract-selection'
 import Deploy from './deploy'
 import Home from './home'
@@ -12,7 +12,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
      <HashRouter>
         <Routes>
             <Route path="/:authorAddress" element={<Home />} />
-            <Route path="/admin/:authorAddress" element={<Admin />} />
+            <Route path="/admin/:authorAddress" element={<AdminWrapper />} />
             <Route path="/admin" element={<ContractSelection />} />
             <Route path="/deploy" element={<Deploy />} />
         </Routes>

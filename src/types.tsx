@@ -8,8 +8,8 @@ export interface AuthorContract {
 
 export interface AuthorDetails {
     contractData: AuthorContract;
-    name: string;
-    email: string;
+    name?: string;
+    email?: string;
 }
 
 export interface Content {

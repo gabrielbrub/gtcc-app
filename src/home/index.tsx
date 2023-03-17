@@ -13,7 +13,7 @@ import { AuthorDetails, Content, ContentMetadata } from "../types";
 const Home = () => {
     const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
     const [ipfs, isOnline, getFile] = useIPFS();
-    const [provider, signer, isOnlineETh, signerAddress] = useEth();
+    const [provider, signer, isOnlineETh, signerAddress] = useEth(false);
     const { authorAddress } = useParams();
     const [authorDetails, setAuthorDetails] = useState<AuthorDetails>();
     const [contents, setContents] = useState<Content[]>([]);
@@ -62,7 +62,7 @@ const Home = () => {
 
 
     const loadContentsFromBlockchain = async () => {
-        const authorContract = new ethers.Contract(authorAddress!, authorAbi, signer);
+        const authorContract = new ethers.Contract(authorAddress!, authorAbi, provider);
         const filter = authorContract.filters.PublishEventCC(null, null, null, null);
         const query = await authorContract.queryFilter(filter);
         parseQueryResultsAndUpdateComponentState(query);
@@ -70,13 +70,13 @@ const Home = () => {
 
     useEffect(() => {
         const author = storedValue.find((contract: AuthorDetails) => contract.contractData.address === authorAddress);
-        if (author) {
+        if (author && provider) {
             setAuthorDetails(storedValue.find((contract: AuthorDetails) => contract.contractData.address === authorAddress));
             loadContentsFromBlockchain();
         } else {
             //Pegar da blockchain
         }
-    }, [signerAddress]);
+    }, [provider]);
 
     const renderContentAccordingToMimeType = (content: Content): JSX.Element => {
         if (content.mimeType.includes('image')) {

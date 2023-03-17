@@ -138,8 +138,6 @@ const Admin = () => {
         if (author) {
             setAuthorDetails(storedValue.find((contract: AuthorDetails) => contract.contractData.address === authorAddress));
             loadContentsFromBlockchain();
-        } else {
-            //Pegar da blockchain
         }
     }, [signerAddress]);
 
@@ -163,13 +161,15 @@ const Admin = () => {
                         <label className='text-sm font-semibold' htmlFor='adress'>Author address</label>
                         <span id='address'>{authorDetails.contractData.address}</span>
                     </div>
-                    <div className='flex flex-col min-w-[200px]'>
-                        <label className='text-sm font-semibold' htmlFor='details'>Author details</label>
-                        <div id='author-details' className='flex flex-col ml-2'>
-                            <span className='text-sm font-medium' id='name'>Name: {authorDetails.name}</span>
-                            <span className='text-sm font-medium' id='email'>Email: {authorDetails.email}</span>
+                    {(authorDetails.name || authorDetails.email) &&
+                        <div className='flex flex-col min-w-[200px]'>
+                            <label className='text-sm font-semibold' htmlFor='details'>Author details</label>
+                            <div id='author-details' className='flex flex-col ml-2'>
+                                {authorDetails.name && <span className='text-sm font-medium' id='name'>Name: {authorDetails.name}</span>}
+                                {authorDetails.email && <span className='text-sm font-medium' id='email'>Email: {authorDetails.email}</span>}
+                            </div>
                         </div>
-                    </div>
+                    }
                 </div>}
                 <h1 className='font-semibold mt-4 mb-2'>Published contents</h1>
                 <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md" onClick={() => {
@@ -178,7 +178,7 @@ const Admin = () => {
                     Add new
                 </button>
                 {showNewContentModal && <div className="w-full max-w-md mx-auto">
-                    <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={async (e:React.FormEvent<HTMLFormElement>) => await publishContent(e)}>
+                    <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={async (e: React.FormEvent<HTMLFormElement>) => await publishContent(e)}>
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2" htmlFor="title">
                                 Title

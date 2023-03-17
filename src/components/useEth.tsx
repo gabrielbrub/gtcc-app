@@ -1,7 +1,7 @@
 import { ethers, Signer } from 'ethers';
 import { useEffect, useState } from 'react';
 
-export const useEth = (onConnectedAddressChange?: (newAddress: string) => void): [ethers.providers.Web3Provider |
+export const useEth = (requestSigner: boolean = true): [ethers.providers.Web3Provider |
   undefined, ethers.providers.JsonRpcSigner | undefined, boolean, string] => {
 
   const [isOnlineEth, setIsOnlineEth] = useState<boolean>(false);
@@ -20,7 +20,6 @@ export const useEth = (onConnectedAddressChange?: (newAddress: string) => void):
     asyncFunc();
   }, [signer]);
 
-
   const connectToProvider = (): ethers.providers.Web3Provider | undefined => {
     if (typeof window.ethereum !== "undefined" && provider === undefined) {
       console.log("conectando a provider...");
@@ -34,38 +33,45 @@ export const useEth = (onConnectedAddressChange?: (newAddress: string) => void):
     }
   }
 
-  const connectToSigner = async (providerParam?: ethers.providers.Web3Provider): Promise<Signer | undefined> => {
-    console.log("conectando a signer...");
-
-    if (provider || providerParam) {
-      const providerPick = providerParam || provider;
-      //await provider.send("eth_requestAccounts", []);
-      let signerLocal = providerPick!.getSigner();
-      const signerAddress = await signerLocal.getAddress();
-      console.log("Account: ", signerAddress);
-      console.log("conectado a signer");
-      setSigner(signerLocal);
-      setIsOnlineEth(true);
-      return signerLocal;
-    } else {
-      connectToProvider();
-      console.warn("Instalar metamask");
+  const connectToSigner = async (providerParam?: ethers.providers.Web3Provider): Promise<ethers.providers.JsonRpcSigner | undefined> => {
+    console.log('conectando a signer...');
+    if (requestSigner) {
+      if (provider || providerParam) {
+        const providerPick = providerParam || provider;
+        await providerPick!.send('eth_requestAccounts', []);
+        let signerLocal = providerPick!.getSigner();
+        const signerAddress = await signerLocal.getAddress();
+        console.log('Account: ', signerAddress);
+        console.log('conectado a signer');
+        setSigner(signerLocal);
+        setIsOnlineEth(true);
+        return signerLocal;
+      } else {
+        connectToProvider();
+        console.warn('Instalar metamask');
+      }
     }
     return undefined;
   };
+
 
   const handleAccountsChanged = async (accounts: string[]) => {
     if (provider) {
       const newSigner = await connectToSigner(provider);
       console.log('Wallet address changed to: ' + accounts[0]);
       const newSignerAddress = await newSigner?.getAddress();
-      if (onConnectedAddressChange && newSignerAddress) onConnectedAddressChange(newSignerAddress);
+      if (newSigner && newSignerAddress) {
+        setSignerAddress(newSignerAddress);
+        setSigner(newSigner);
+      }
     }
   }
 
   useEffect(() => {
     const newProvider = connectToProvider();
-    connectToSigner(newProvider);
+    if (requestSigner) {
+      connectToSigner(newProvider);
+    }
     window.ethereum.on('accountsChanged', handleAccountsChanged);
     return () => window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
   }, []);
@@ -82,7 +88,9 @@ export const useEth = (onConnectedAddressChange?: (newAddress: string) => void):
             console.error(`Error getting network: ${error}`)
             setSigner(undefined);
             setIsOnlineEth(false);
-            connectToSigner();
+            if (requestSigner) {
+              connectToSigner();
+            }
           })
         } else {
           console.error('Metamask provider not detected');
