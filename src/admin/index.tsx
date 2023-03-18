@@ -5,8 +5,9 @@ import Navbar from "../components/navBar";
 import { useEth } from "../components/useEth";
 import useIPFS from "../components/useIPFS";
 import { useLocalStorage } from "../components/useLocalStorage";
-import { authorAbi, authorBytecode } from "../ContractsData";
+import { authorAbi } from "../ContractsData";
 import { AuthorDetails, Content, ContentMetadata } from "../types";
+import { promiseWithTimeout } from "../utils";
 
 const Admin = () => {
     const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
@@ -34,30 +35,32 @@ const Admin = () => {
             const jsonObject: Record<string, any> = JSON.parse(jsonData);
             return jsonObject as ContentMetadata;
         }
-        console.error("Not connected to IPFS");
-        throw Error();
+        throw Error(`Error fetching ${cid} from IPFS`);
     }
 
     const parseQueryResultsAndUpdateComponentState = async (queryResult: any[]) => {
-        const contentBuffer = [];
         for (const event of queryResult) {
-            const contentFile = await getFile(event.args.contentCid);
-            const contentMetadata = await getMetadataFromIpfs(event.args.metadataCid);
-            const content = {
-                mimeType: ethers.utils.parseBytes32String(event.args.mimeType),
-                licenseType: ethers.utils.parseBytes32String(event.args.mimeType),
-                contentCid: event.args.contentCid,
-                metadataCid: event.args.metadataCid,
-                contractData: {
-                    contentUrl: URL.createObjectURL(contentFile),
-                    content: contentFile,
-                    metadata: contentMetadata,
-                },
-            }
-            contentBuffer.push(content);
+            getFile(event.args.contentCid).then(async (contentFile: File) => {
+                let contentMetadata;
+                try {
+                    contentMetadata = await promiseWithTimeout(getMetadataFromIpfs(event.args.metadataCid), 5000);
+                } catch (e) {
+                    console.error(e);
+                }
+                const content = {
+                    mimeType: ethers.utils.parseBytes32String(event.args.mimeType),
+                    licenseType: ethers.utils.parseBytes32String(event.args.mimeType),
+                    contentCid: event.args.contentCid,
+                    metadataCid: event.args.metadataCid,
+                    contractData: {
+                        contentUrl: URL.createObjectURL(contentFile),
+                        content: contentFile,
+                        metadata: contentMetadata,
+                    },
+                }
+                setContents(prev => [content, ...prev]);
+            });
         }
-        console.log(contentBuffer);
-        setContents(contentBuffer);
     }
 
     const loadContentsFromBlockchain = async () => {
@@ -164,7 +167,7 @@ const Admin = () => {
                     {(authorDetails.name || authorDetails.email) &&
                         <div className='flex flex-col min-w-[200px]'>
                             <label className='text-sm font-semibold' htmlFor='details'>Author details</label>
-                            <div id='author-details' className='flex flex-col ml-2'>
+                            <div id='author-details' className='flex flex-col'>
                                 {authorDetails.name && <span className='text-sm font-medium' id='name'>Name: {authorDetails.name}</span>}
                                 {authorDetails.email && <span className='text-sm font-medium' id='email'>Email: {authorDetails.email}</span>}
                             </div>
@@ -225,8 +228,8 @@ const Admin = () => {
                             <div className="bg-white rounded-lg shadow-md overflow-hidden">
                                 {renderContentAccordingToMimeType(content)}
                                 <div className="p-4">
-                                    <h2 className="text-lg font-semibold mb-2">{content.contractData.metadata.title}</h2>
-                                    <p className="text-gray-700 mb-2">{content.contractData.metadata.description}</p>
+                                    {content.contractData.metadata && <h2 className="text-lg font-semibold mb-2">{content.contractData.metadata.title}</h2>}
+                                    {content.contractData.metadata && <p className="text-gray-700 mb-2">{content.contractData.metadata.description}</p>}
                                     <p className="text-gray-500 text-sm">{content.licenseType}</p>
                                 </div>
                             </div>

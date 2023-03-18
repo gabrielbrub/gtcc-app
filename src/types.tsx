@@ -23,7 +23,7 @@ export interface Content {
 export interface ContentDetails {
     content: File;
     contentUrl: string;
-    metadata: ContentMetadata;
+    metadata?: ContentMetadata;
 }
 
 export interface ContentMetadata {

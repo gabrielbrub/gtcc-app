@@ -7,6 +7,7 @@ import useIPFS from "../components/useIPFS";
 import { useLocalStorage } from "../components/useLocalStorage";
 import { authorAbi } from "../ContractsData";
 import { AuthorDetails, Content, ContentMetadata } from "../types";
+import { promiseWithTimeout } from "../utils";
 
 
 
@@ -34,30 +35,32 @@ const Home = () => {
             const jsonObject: Record<string, any> = JSON.parse(jsonData);
             return jsonObject as ContentMetadata;
         }
-        console.error("Not connected to IPFS");
-        throw Error();
+        throw Error(`Error fetching ${cid} from IPFS`);
     }
 
     const parseQueryResultsAndUpdateComponentState = async (queryResult: any[]) => {
-        const contentBuffer = [];
         for (const event of queryResult) {
-            const contentFile = await getFile(event.args.contentCid);
-            const contentMetadata = await getMetadataFromIpfs(event.args.metadataCid);
-            const content = {
-                mimeType: ethers.utils.parseBytes32String(event.args.mimeType),
-                licenseType: ethers.utils.parseBytes32String(event.args.mimeType),
-                contentCid: event.args.contentCid,
-                metadataCid: event.args.metadataCid,
-                contractData: {
-                    contentUrl: URL.createObjectURL(contentFile),
-                    content: contentFile,
-                    metadata: contentMetadata,
-                },
-            }
-            contentBuffer.push(content);
+            getFile(event.args.contentCid).then(async (contentFile: File) => {
+                let contentMetadata;
+                try {
+                    contentMetadata = await promiseWithTimeout(getMetadataFromIpfs(event.args.metadataCid), 100000);
+                } catch (e) {
+                    console.error(e);
+                }
+                const content = {
+                    mimeType: ethers.utils.parseBytes32String(event.args.mimeType),
+                    licenseType: ethers.utils.parseBytes32String(event.args.mimeType),
+                    contentCid: event.args.contentCid,
+                    metadataCid: event.args.metadataCid,
+                    contractData: {
+                        contentUrl: URL.createObjectURL(contentFile),
+                        content: contentFile,
+                        metadata: contentMetadata,
+                    },
+                }
+                setContents(prev => [content, ...prev]);
+            });
         }
-        console.log(contentBuffer);
-        setContents(contentBuffer);
     }
 
 
@@ -73,8 +76,6 @@ const Home = () => {
         if (author && provider) {
             setAuthorDetails(storedValue.find((contract: AuthorDetails) => contract.contractData.address === authorAddress));
             loadContentsFromBlockchain();
-        } else {
-            //Pegar da blockchain
         }
     }, [provider]);
 
@@ -106,6 +107,21 @@ const Home = () => {
                         </svg>}
                     </div>
                 </div>
+                {authorDetails && <div className='flex flex-row justify-between mt-4'>
+                    <div className='flex flex-col'>
+                        <label className='text-sm font-semibold' htmlFor='adress'>Author address</label>
+                        <span id='address'>{authorDetails.contractData.address}</span>
+                    </div>
+                    {(authorDetails.name || authorDetails.email) &&
+                        <div className='flex flex-col min-w-[200px]'>
+                            <label className='text-sm font-semibold' htmlFor='details'>Author details</label>
+                            <div id='author-details' className='flex flex-col'>
+                                {authorDetails.name && <span className='text-sm font-medium' id='name'>Name: {authorDetails.name}</span>}
+                                {authorDetails.email && <span className='text-sm font-medium' id='email'>Email: {authorDetails.email}</span>}
+                            </div>
+                        </div>
+                    }
+                </div>}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                     {contents.map((content: Content) => {
@@ -113,8 +129,8 @@ const Home = () => {
                             <div className="bg-white rounded-lg shadow-md overflow-hidden">
                                 {renderContentAccordingToMimeType(content)}
                                 <div className="p-4">
-                                    <h2 className="text-lg font-semibold mb-2">{content.contractData.metadata.title}</h2>
-                                    <p className="text-gray-700 mb-2">{content.contractData.metadata.description}</p>
+                                    {content.contractData.metadata && <h2 className="text-lg font-semibold mb-2">{content.contractData.metadata.title}</h2>}
+                                    {content.contractData.metadata && <p className="text-gray-700 mb-2">{content.contractData.metadata.description}</p>}
                                     <p className="text-gray-500 text-sm">{content.licenseType}</p>
                                 </div>
                             </div>
