@@ -9,9 +9,9 @@ import { AuthorDetails } from "../types";
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
 import { useNavigate } from "react-router-dom";
+import { IpfsButton } from "../components/ipfsButton";
 
 const Deploy = () => {
-  //const [provider, setProvider] = useState<ethers.providers.Web3Provider | undefined>();
   const [metadata, setMetadata] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [name, setName] = useState<string>('');
@@ -54,7 +54,7 @@ const Deploy = () => {
       title: <p>Contract Deployed</p>,
       html: <span>The author contract was deployed and can be accessed by its address: <b>{address}</b> <br />
         The associated metadata file has the following CID: <br /><b>{cid}</b></span>,
-       willClose: () => {
+      willClose: () => {
         if (storedValue.filter((contract: AuthorDetails) => contract.contractData.owner === signerAddress).length > 1) {
           navigate('/admin');
         } else {
@@ -101,16 +101,9 @@ const Deploy = () => {
   return (
     <div>
       <Navbar />
-      <main className='pt-[80px] max-w-screen-lg mx-auto'>
+      <main className='max-w-screen-lg mx-auto'>
         <div className='flex flex-row mt-1 justify-between'>
-          <div className='flex flex-row mt-1 items-center'>
-            <span className='pl-[4px]'>IPFS</span>
-            {isOnline ? <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 pl-1">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg> : <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 pl-1">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-            </svg>}
-          </div>
+          <IpfsButton />
           <span>{`Connected wallet address: ${signerAddress}`}</span>
         </div>
         <div className="mt-5">
@@ -145,7 +138,7 @@ const Deploy = () => {
                   <div className="bg-gray-50 px-4 py-3 text-right sm:px-6">
                     <button type="submit" className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 disabled:opacity-75
                          px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                         disabled={signerAddress===''}
+                      disabled={signerAddress === ''}
                       onClick={(e) => {
                         e.preventDefault();
                         submitForm();

@@ -85,7 +85,7 @@ const ContractSelection = () => {
     return (
         <div>
             <Navbar />
-            <main className='pt-[80px] max-w-screen-lg mx-auto'>
+            <main className='max-w-screen-lg mx-auto'>
                 <h1 className='font-semibold my-2'>Deployed contracts</h1>
                 <div className="flex items-center bg-gray-100 p-4 rounded-md max-w-[50%]">
                     <input type="text" value={newAuthorAddress}

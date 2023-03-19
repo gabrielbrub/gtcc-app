@@ -1,5 +1,9 @@
-import { create, IPFSHTTPClient } from 'ipfs-http-client';
+import { create, IPFSHTTPClient, Options } from 'ipfs-http-client';
 import { useEffect, useRef, useState } from 'react';
+import { Buffer } from 'buffer';
+import { useSessionStorage } from 'usehooks-ts';
+import { IPFSConnectionData } from '../types';
+import { defaultIpfsHost, defaultIpfsPort, defaultIpfsProtocol } from '../globals';
 
 type IPFSConnection = IPFSHTTPClient | null;
 
@@ -7,14 +11,34 @@ export const useIPFS = (): [IPFSConnection, boolean, (cid: string) => Promise<Fi
   const [ipfs, setIPFS] = useState<IPFSConnection>(null);
   const ipfsRef = useRef<IPFSConnection>(null);
   const [isOnline, setIsOnline] = useState<boolean>(false);
+  const [value, setValue] = useSessionStorage<IPFSConnectionData>('@gtcc-ipfs', {
+    host: defaultIpfsHost,
+    port: defaultIpfsPort,
+    protocol: defaultIpfsProtocol,
+  });
+
+
 
   const connectIPFS = async () => {
     try {
+      let ipfsObj: Options = {
+        host: value.host,
+        port: value.port,
+        protocol: value.protocol,
+      }
+      if (value.apiSecret && value.projectId) {
+        const auth = 'Basic ' + Buffer.from(value.projectId + ':' + value.apiSecret).toString('base64')
+        ipfsObj = {
+          ...ipfsObj,
+          headers: {
+            authorization: auth,
+          }
+        }
+      }
+      const ipfs = create(ipfsObj);
       console.log('connecting to ipfs');
-      const ipfs = create({ host: '127.0.0.1', port: 5001, protocol: 'http' });
       setIPFS(ipfs);
       ipfsRef.current = ipfs;
-      ipfs.isOnline();
       setIsOnline(true);
     } catch (error) {
       console.error('Failed to connect to IPFS node:', error);
@@ -33,17 +57,12 @@ export const useIPFS = (): [IPFSConnection, boolean, (cid: string) => Promise<Fi
     const file = new File([fileData], cid.toString());
     return file;
   }
-
+  
   useEffect(() => {
     connectIPFS();
-
     const interval = setInterval(() => {
       if (ipfsRef.current != null) {
-        Promise.resolve(ipfsRef.current.isOnline())
-          .then(() => {
-            console.log('is online then');
-            setIsOnline(true);
-          })
+        ipfsRef.current.version()
           .catch(() => {
             console.warn('Lost connection to IPFS node, attempting to reconnect...');
             setIPFS(null);
@@ -54,8 +73,8 @@ export const useIPFS = (): [IPFSConnection, boolean, (cid: string) => Promise<Fi
       } else {
         connectIPFS();
       }
-    }, 15000);
 
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 

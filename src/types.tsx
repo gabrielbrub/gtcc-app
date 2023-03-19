@@ -5,6 +5,14 @@ export interface AuthorContract {
     metadata: string;
 }
 
+export interface IPFSConnectionData {
+    host: string;
+    port: number;
+    projectId?: string;
+    apiSecret?: string;
+    protocol?: string;
+}
+
 
 export interface AuthorDetails {
     contractData: AuthorContract;
