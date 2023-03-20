@@ -47,7 +47,7 @@ const Admin = () => {
             getFile(event.args.contentCid).then(async (contentFile: File) => {
                 let contentMetadata;
                 try {
-                    contentMetadata = await promiseWithTimeout(getMetadataFromIpfs(event.args.metadataCid), 5000);
+                    contentMetadata = await promiseWithTimeout(getMetadataFromIpfs(event.args.metadataCid), 20000);
                 } catch (e) {
                     console.error(e);
                 }

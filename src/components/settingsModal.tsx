@@ -5,6 +5,8 @@ import { useSessionStorage } from 'usehooks-ts';
 import { defaultIpfsHost, defaultIpfsPort, defaultIpfsProtocol } from '../globals';
 import { IPFSConnectionData } from '../types';
 import { Buffer } from 'buffer';
+import { promiseWithTimeout } from '../utils';
+import { useNavigate } from 'react-router-dom';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -23,6 +25,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onRequestClose })
   const [protocol, setProtocol] = useState(value.protocol);
   const [projectId, setProjectId] = useState<string>();
   const [apiSecret, setApiSecret] = useState<string>();
+  const navigate = useNavigate();
+
 
 
   useEffect(() => {
@@ -33,7 +37,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onRequestClose })
     setApiSecret(value.apiSecret);
   }, [value]);
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     setValue({
       host: host,
       port: port,
@@ -41,7 +45,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onRequestClose })
       projectId: projectId,
       apiSecret: apiSecret,
     });
-    onRequestClose();
+    navigate(0);
   };
 
   const handleCancel = () => {
@@ -56,6 +60,34 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onRequestClose })
     setApiSecret(undefined);
     setUseLocalNode(true);
   };
+
+  const handleTestConnection = async () => {
+    try {
+      let testIpfs;
+      if (useLocalNode) {
+        testIpfs = create({
+          host: host,
+          protocol: protocol,
+          port: port,
+        })
+      } else {
+        const auth = 'Basic ' + Buffer.from(projectId + ':' + apiSecret).toString('base64');
+        testIpfs = create({
+          host: host,
+          protocol: protocol,
+          port: port,
+          headers: {
+            authorization: auth,
+          }
+        })
+      }
+      await promiseWithTimeout(testIpfs.version(), 10000);
+      alert("Attempt to connect to IPFS succeeded.");
+    } catch (e) {
+      alert("Attempt to connect to IPFS failed.");
+      throw e;
+    }
+  }
 
   return (
     <Modal
@@ -105,33 +137,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onRequestClose })
         )}
         <div className="flex flex-col items-end">
           <span className='pr-2 font-semibold text-sm text-blue-600 cursor-pointer mb-1'
-            onClick={async () => {
-              try {
-                let testIpfs;
-                if (useLocalNode) {
-                  testIpfs = create({
-                    host: host,
-                    protocol: protocol,
-                    port: port,
-                  })
-                } else {
-                  const auth = 'Basic ' + Buffer.from(projectId + ':' + apiSecret).toString('base64');
-                  testIpfs = create({
-                    host: host,
-                    protocol: protocol,
-                    port: port,
-                    headers: {
-                      authorization: auth,
-                    }
-                  })
-                }
-                await testIpfs.version();
-                alert("Attempt to connect to IPFS succeeded.");
-              } catch (e) {
-                alert("Attempt to connect to IPFS failed.");
-                console.error(e);
-              }
-            }}
+            onClick={handleTestConnection}
           >Test connection</span>
           <div className="flex justify-end space-x-2">
             <button onClick={handleDefault} className="bg-gray-500 text-white px-4 py-2 rounded">

@@ -6,14 +6,14 @@ import { createContext, useContext } from 'react';
 export interface IPFSContextProps {
     ipfs: IPFSHTTPClient | null,
     isOnline: boolean,
-    getFile: (cid: string) => Promise<File>
+    getFile: (cid: string) => Promise<File>,
 }
 
 
 export const IPFSContext = createContext<IPFSContextProps>({
     ipfs: null,
     isOnline: false,
-    getFile: (): Promise<File> => { throw Error() }
+    getFile: (): Promise<File> => { throw Error("Not implemented") },
 });
 
 export const useIPFSContext = () => useContext<IPFSContextProps>(IPFSContext)

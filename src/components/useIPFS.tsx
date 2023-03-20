@@ -11,7 +11,7 @@ export const useIPFS = (): [IPFSConnection, boolean, (cid: string) => Promise<Fi
   const [ipfs, setIPFS] = useState<IPFSConnection>(null);
   const ipfsRef = useRef<IPFSConnection>(null);
   const [isOnline, setIsOnline] = useState<boolean>(false);
-  const [value, setValue] = useSessionStorage<IPFSConnectionData>('@gtcc-ipfs', {
+  const [value] = useSessionStorage<IPFSConnectionData>('@gtcc-ipfs', {
     host: defaultIpfsHost,
     port: defaultIpfsPort,
     protocol: defaultIpfsProtocol,

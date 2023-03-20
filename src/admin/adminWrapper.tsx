@@ -2,8 +2,8 @@ import { ethers } from "ethers";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Admin from ".";
+import { useIPFSContext } from "../components/ipfsContext";
 import { useEth } from "../components/useEth";
-import useIPFS from "../components/useIPFS";
 import { useLocalStorage } from "../components/useLocalStorage";
 import { authorAbi } from "../ContractsData";
 import Home from "../home";
@@ -18,7 +18,7 @@ const AdminWrapper = (): JSX.Element => {
     const { authorAddress } = useParams();
     const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
     const [destination, setDestination] = useState<Destination | undefined>(undefined);
-    const [ipfs, isOnline, getFile] = useIPFS();
+    const { ipfs, isOnline } = useIPFSContext();
 
     const loadFromEthereumAndIPFS = async () => {
         const authorContract = new ethers.Contract(authorAddress!, authorAbi, provider);
