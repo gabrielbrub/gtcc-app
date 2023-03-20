@@ -8,3 +8,8 @@ export function promiseWithTimeout<T>(promise: Promise<T>, timeoutMs: number): P
   
     return Promise.race([promise, timeoutPromise]);
   }
+
+
+  export const sleep = async (ms: number) => {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }

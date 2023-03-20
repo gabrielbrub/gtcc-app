@@ -1,6 +1,8 @@
 import { ethers } from "ethers";
 import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 import { IpfsButton } from "../components/ipfsButton";
 import { IPFSContext } from "../components/ipfsContext";
 import Navbar from "../components/navBar";
@@ -17,8 +19,8 @@ const Admin = () => {
     const [showNewContentModal, setShowNewContentModal] = useState<boolean>(false);
     const { authorAddress } = useParams();
     const [authorDetails, setAuthorDetails] = useState<AuthorDetails>();
-    const [contents, setContents] = useState<Set<Content>>(new Set<Content>());
-
+    const [contents, setContents] = useState<Content[]>([]);
+    const MySwal = withReactContent(Swal);
 
     const getMetadataFromIpfs = async (cid: string): Promise<ContentMetadata> => {
         if (ipfs && isOnline) {
@@ -40,6 +42,7 @@ const Admin = () => {
     }
 
     const parseQueryResultsAndUpdateComponentState = async (queryResult: any[]) => {
+        setContents([]);
         for (const event of queryResult) {
             getFile(event.args.contentCid).then(async (contentFile: File) => {
                 let contentMetadata;
@@ -59,21 +62,12 @@ const Admin = () => {
                         metadata: contentMetadata,
                     },
                 }
-                setContents(prev => {
-                    const newContents = new Set([...prev, content]);
-                    const uniqueContents = Array.from(newContents).filter(
-                        (value, index, array) => array.findIndex(
-                            element => JSON.stringify(element) === JSON.stringify(value)
-                        ) === index
-                    );
-                    return new Set(uniqueContents);
-                });
+                setContents(prev => [...prev, content]);
             });
         }
     }
 
     const loadContentsFromBlockchain = async () => {
-        console.log("LOADING FROM " + authorAddress);
         const authorContract = new ethers.Contract(authorAddress!, authorAbi, signer);
         const filter = authorContract.filters.PublishEventCC(null, null, null, null);
         const query = await authorContract.queryFilter(filter);
@@ -99,37 +93,54 @@ const Admin = () => {
         return await pinContentToIPFS(metadataFile);
     }
 
-
     const publishContent = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        const data = Object.fromEntries(formData);
-        const contentCid = await pinContentToIPFS(data.file as File);
-        const contentMetadata = {
-            'title': data.title,
-            'description': data.description,
-            'contentCid': contentCid,
-            'authorAddress': authorAddress,
-        };
-        const metadataCid = await pinMetadataToIPFS(contentMetadata);
-
-        if (authorAddress) {
-            console.log(signerAddress);
-            console.log(signer);
-            console.log(authorAddress);
-            console.log(ethers.utils.formatBytes32String((data.file as File).type));
-            console.log(ethers.utils.formatBytes32String(data.license as string));
-            console.log(contentCid);
-            console.log(metadataCid);
-            const authorContract = new ethers.Contract(authorAddress, authorAbi, signer);
-            await authorContract.publishCC(
-                ethers.utils.formatBytes32String((data.file as File).type),
-                ethers.utils.formatBytes32String(data.license as string),
-                contentCid,
-                metadataCid,
-            );
+        try {
+            const formData = new FormData(e.currentTarget);
+            const data = Object.fromEntries(formData);
+            const contentCid = await pinContentToIPFS(data.file as File);
+            const contentMetadata = {
+                'title': data.title,
+                'description': data.description,
+                'contentCid': contentCid,
+                'authorAddress': authorAddress,
+            };
+            const metadataCid = await pinMetadataToIPFS(contentMetadata);
+    
+            if (authorAddress) {
+                console.log(signerAddress);
+                console.log(signer);
+                console.log(authorAddress);
+                console.log(ethers.utils.formatBytes32String((data.file as File).type));
+                console.log(ethers.utils.formatBytes32String(data.license as string));
+                console.log(contentCid);
+                console.log(metadataCid);
+                const authorContract = new ethers.Contract(authorAddress, authorAbi, signer);
+                await authorContract.publishCC(
+                    ethers.utils.formatBytes32String((data.file as File).type),
+                    ethers.utils.formatBytes32String(data.license as string),
+                    contentCid,
+                    metadataCid,
+                );
+                setShowNewContentModal(false);
+                const eventListener = async (eventArgs: any) => {
+                    console.log('Event received:', eventArgs);
+                    MySwal.fire({
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        title: "Transaction sent.",
+                        text: " Please wait for confirmation. Reload the page in a few minutes and" +
+                        " you should be able to see it."
+                    });
+                    authorContract.off("PublishEventCC", eventListener);
+                };
+                authorContract.on("PublishEventCC", eventListener);
+            }
+        } catch (e) {
+            alert("Something went wrong");
+            throw(e);
         }
-        loadContentsFromBlockchain().finally(() => setShowNewContentModal(false));
     };
 
     const renderContentAccordingToMimeType = (content: Content): JSX.Element => {
@@ -226,7 +237,7 @@ const Admin = () => {
                 </div>}
                 <hr className='mt-3 mb-3'></hr>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {[...contents].map((content: Content) => {
+                    {contents.map((content: Content) => {
                         return (
                             <div className="bg-white rounded-lg shadow-md overflow-hidden">
                                 {renderContentAccordingToMimeType(content)}
