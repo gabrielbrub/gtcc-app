@@ -1,9 +1,16 @@
+import { IPFSHTTPClient } from "ipfs-http-client/dist/src/types";
 
 export interface AuthorContract {
     owner: string;
     address: string;
     metadata: string;
 }
+
+export interface IPFSContextProvider {
+    ipfs: IPFSHTTPClient | null,
+    isOnline: boolean,
+    getFile: (cid: string) => Promise<File>
+  }
 
 export interface IPFSConnectionData {
     host: string;

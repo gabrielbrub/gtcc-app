@@ -1,8 +1,7 @@
-import { ethers, Signer } from "ethers";
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ethers } from "ethers";
+import { ChangeEvent, useContext, useEffect, useState } from 'react';
 import Navbar from "../components/navBar";
 import { authorAbi, authorBytecode } from '../ContractsData'
-import { useIPFS } from "../components/useIPFS";
 import { useEth } from "../components/useEth";
 import { useLocalStorage } from "../components/useLocalStorage";
 import { AuthorDetails } from "../types";
@@ -10,12 +9,13 @@ import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
 import { useNavigate } from "react-router-dom";
 import { IpfsButton } from "../components/ipfsButton";
+import { IPFSContext } from "../components/ipfsContext";
 
 const Deploy = () => {
   const [metadata, setMetadata] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [name, setName] = useState<string>('');
-  const [ipfs, isOnline] = useIPFS();
+  const { ipfs, isOnline, getFile } = useContext(IPFSContext);  
   const [provider, signer, isOnlineETh, signerAddress] = useEth();
   const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
   const MySwal = withReactContent(Swal);
@@ -103,7 +103,7 @@ const Deploy = () => {
       <Navbar />
       <main className='max-w-screen-lg mx-auto'>
         <div className='flex flex-row mt-1 justify-between'>
-          <IpfsButton />
+          <IpfsButton/>
           <span>{`Connected wallet address: ${signerAddress}`}</span>
         </div>
         <div className="mt-5">

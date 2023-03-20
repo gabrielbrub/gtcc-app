@@ -1,10 +1,10 @@
 import { ethers } from "ethers";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { IpfsButton } from "../components/ipfsButton";
+import { IPFSContext } from "../components/ipfsContext";
 import Navbar from "../components/navBar";
 import { useEth } from "../components/useEth";
-import useIPFS from "../components/useIPFS";
 import { useLocalStorage } from "../components/useLocalStorage";
 import { authorAbi } from "../ContractsData";
 import { AuthorDetails, Content, ContentMetadata } from "../types";
@@ -12,7 +12,7 @@ import { promiseWithTimeout } from "../utils";
 
 const Admin = () => {
     const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
-    const [ipfs, isOnline, getFile] = useIPFS();
+    const { ipfs, isOnline, getFile } = useContext(IPFSContext);  
     const [provider, signer, isOnlineETh, signerAddress] = useEth();
     const [showNewContentModal, setShowNewContentModal] = useState<boolean>(false);
     const { authorAddress } = useParams();
@@ -150,7 +150,7 @@ const Admin = () => {
             <Navbar />
             <main className='max-w-screen-lg mx-auto mb-4'>
                 <div className='flex flex-row mt-1 justify-between'>
-                    <IpfsButton />
+                    <IpfsButton/>
                     <span>{`Connected wallet address: ${signerAddress}`}</span>
                 </div>
                 {authorDetails && <div className='flex flex-row justify-between mt-4'>

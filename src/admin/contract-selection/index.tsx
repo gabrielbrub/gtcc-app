@@ -1,16 +1,16 @@
 import { ethers } from "ethers";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useIPFSContext } from "../../components/ipfsContext";
 import Navbar from "../../components/navBar";
 import { useEth } from "../../components/useEth";
-import useIPFS from "../../components/useIPFS";
 import { useLocalStorage } from "../../components/useLocalStorage";
 import { authorAbi } from "../../ContractsData";
 import { AuthorDetails } from "../../types";
 
 const ContractSelection = () => {
     const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
-    const [ipfs, isOnline] = useIPFS();
+    const { ipfs, isOnline } = useIPFSContext();  
     const [provider, signer, isOnlineETh, signerAddress] = useEth();
     const [authorDetails, setAuthorDetails] = useState<AuthorDetails[]>([]);
     const [newAuthorAddress, setNewAuthorAddress] = useState<string>('');

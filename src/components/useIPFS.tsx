@@ -35,10 +35,11 @@ export const useIPFS = (): [IPFSConnection, boolean, (cid: string) => Promise<Fi
           }
         }
       }
-      const ipfs = create(ipfsObj);
+      const ipfsClient = create(ipfsObj);
       console.log('connecting to ipfs');
-      setIPFS(ipfs);
-      ipfsRef.current = ipfs;
+      setIPFS(ipfsClient);
+      ipfsRef.current = ipfsClient;
+      await ipfsClient.version();
       setIsOnline(true);
     } catch (error) {
       console.error('Failed to connect to IPFS node:', error);

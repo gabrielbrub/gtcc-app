@@ -2,9 +2,9 @@ import { ethers } from "ethers";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { IpfsButton } from "../components/ipfsButton";
+import { useIPFSContext } from "../components/ipfsContext";
 import Navbar from "../components/navBar";
 import { useEth } from "../components/useEth";
-import useIPFS from "../components/useIPFS";
 import { useLocalStorage } from "../components/useLocalStorage";
 import { authorAbi } from "../ContractsData";
 import { AuthorDetails, Content, ContentMetadata } from "../types";
@@ -14,7 +14,7 @@ import { promiseWithTimeout } from "../utils";
 
 const Home = () => {
     const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
-    const [ipfs, isOnline, getFile] = useIPFS();
+    const { ipfs, isOnline, getFile } = useIPFSContext();  
     const [provider, signer, isOnlineETh, signerAddress] = useEth(false);
     const { authorAddress } = useParams();
     const [authorDetails, setAuthorDetails] = useState<AuthorDetails>();
@@ -98,7 +98,7 @@ const Home = () => {
         <div>
             <Navbar />
             <main className='max-w-screen-lg mx-auto mb-4'>
-                <IpfsButton />
+                <IpfsButton/>
                 {authorDetails && <div className='flex flex-row justify-between mt-4'>
                     <div className='flex flex-col'>
                         <label className='text-sm font-semibold' htmlFor='adress'>Author address</label>

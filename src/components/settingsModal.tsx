@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import { create } from 'ipfs-http-client';
+import React, { useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import { useSessionStorage } from 'usehooks-ts';
 import { defaultIpfsHost, defaultIpfsPort, defaultIpfsProtocol } from '../globals';
 import { IPFSConnectionData } from '../types';
+import { Buffer } from 'buffer';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -22,11 +24,20 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onRequestClose })
   const [projectId, setProjectId] = useState<string>();
   const [apiSecret, setApiSecret] = useState<string>();
 
+
+  useEffect(() => {
+    setHost(value.host);
+    setPort(value.port);
+    setProtocol(value.protocol);
+    setProjectId(value.projectId);
+    setApiSecret(value.apiSecret);
+  }, [value]);
+
   const handleConfirm = () => {
     setValue({
       host: host,
       port: port,
-      protocol: useLocalNode ? 'http' : 'https',
+      protocol: protocol,
       projectId: projectId,
       apiSecret: apiSecret,
     });
@@ -41,6 +52,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onRequestClose })
     setHost(defaultIpfsHost);
     setPort(defaultIpfsPort);
     setProtocol(defaultIpfsProtocol);
+    setProjectId(undefined);
+    setApiSecret(undefined);
     setUseLocalNode(true);
   };
 
@@ -90,17 +103,49 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onRequestClose })
             </label>
           </>
         )}
-        <div className="flex justify-end space-x-2">
-          <button onClick={handleDefault} className="bg-gray-500 text-white px-4 py-2 rounded">
-            Reset Defaults
-          </button>
-          <button onClick={handleCancel} className="bg-red-400 text-white px-4 py-2 rounded">
-            Cancel
-          </button>
-          <button onClick={handleConfirm} className="bg-blue-500 text-white px-4 py-2 rounded">
-            Confirm
-          </button>
-          <div />
+        <div className="flex flex-col items-end">
+          <span className='pr-2 font-semibold text-sm text-blue-600 cursor-pointer mb-1'
+            onClick={async () => {
+              try {
+                let testIpfs;
+                if (useLocalNode) {
+                  testIpfs = create({
+                    host: host,
+                    protocol: protocol,
+                    port: port,
+                  })
+                } else {
+                  const auth = 'Basic ' + Buffer.from(projectId + ':' + apiSecret).toString('base64');
+                  testIpfs = create({
+                    host: host,
+                    protocol: protocol,
+                    port: port,
+                    headers: {
+                      authorization: auth,
+                    }
+                  })
+                }
+                await testIpfs.version();
+                alert("Attempt to connect to IPFS succeeded.");
+              } catch (e) {
+                alert("Attempt to connect to IPFS failed.");
+                console.error(e);
+              }
+            }}
+          >Test connection</span>
+          <div className="flex justify-end space-x-2">
+            <button onClick={handleDefault} className="bg-gray-500 text-white px-4 py-2 rounded">
+              Reset Defaults
+            </button>
+            <button onClick={handleCancel} className="bg-red-400 text-white px-4 py-2 rounded">
+              Cancel
+            </button>
+            <button onClick={handleConfirm} className="bg-blue-500 text-white px-4 py-2 rounded">
+              Confirm
+            </button>
+            <div />
+          </div>
+
         </div>
       </div>
     </Modal>
