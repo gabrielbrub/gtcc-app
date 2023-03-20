@@ -12,12 +12,12 @@ import { promiseWithTimeout } from "../utils";
 
 const Admin = () => {
     const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
-    const { ipfs, isOnline, getFile } = useContext(IPFSContext);  
+    const { ipfs, isOnline, getFile } = useContext(IPFSContext);
     const [provider, signer, isOnlineETh, signerAddress] = useEth();
     const [showNewContentModal, setShowNewContentModal] = useState<boolean>(false);
     const { authorAddress } = useParams();
     const [authorDetails, setAuthorDetails] = useState<AuthorDetails>();
-    const [contents, setContents] = useState<Content[]>([]);
+    const [contents, setContents] = useState<Set<Content>>(new Set<Content>());
 
 
     const getMetadataFromIpfs = async (cid: string): Promise<ContentMetadata> => {
@@ -59,12 +59,21 @@ const Admin = () => {
                         metadata: contentMetadata,
                     },
                 }
-                setContents(prev => [content, ...prev]);
+                setContents(prev => {
+                    const newContents = new Set([...prev, content]);
+                    const uniqueContents = Array.from(newContents).filter(
+                        (value, index, array) => array.findIndex(
+                            element => JSON.stringify(element) === JSON.stringify(value)
+                        ) === index
+                    );
+                    return new Set(uniqueContents);
+                });
             });
         }
     }
 
     const loadContentsFromBlockchain = async () => {
+        console.log("LOADING FROM " + authorAddress);
         const authorContract = new ethers.Contract(authorAddress!, authorAbi, signer);
         const filter = authorContract.filters.PublishEventCC(null, null, null, null);
         const query = await authorContract.queryFilter(filter);
@@ -120,7 +129,7 @@ const Admin = () => {
                 metadataCid,
             );
         }
-        loadContentsFromBlockchain();
+        loadContentsFromBlockchain().finally(() => setShowNewContentModal(false));
     };
 
     const renderContentAccordingToMimeType = (content: Content): JSX.Element => {
@@ -150,7 +159,7 @@ const Admin = () => {
             <Navbar />
             <main className='max-w-screen-lg mx-auto mb-4'>
                 <div className='flex flex-row mt-1 justify-between'>
-                    <IpfsButton/>
+                    <IpfsButton />
                     <span>{`Connected wallet address: ${signerAddress}`}</span>
                 </div>
                 {authorDetails && <div className='flex flex-row justify-between mt-4'>
@@ -205,19 +214,19 @@ const Admin = () => {
                             <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                 name="file" id="file" type="file" />
                         </div>
-                        <div className="flex justify-start">
+                        <div className="flex justify-end">
                             <button type="button" className="py-2 mr-2 px-4 bg-red-600 text-white rounded-md hover:bg-red-700"
                                 onClick={() => { setShowNewContentModal(false) }}
                             >Cancel</button>
                             <button className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md focus:outline-none focus:shadow-outline" type="submit">
-                                Deploy
+                                Publish
                             </button>
                         </div>
                     </form>
                 </div>}
                 <hr className='mt-3 mb-3'></hr>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {contents.map((content: Content) => {
+                    {[...contents].map((content: Content) => {
                         return (
                             <div className="bg-white rounded-lg shadow-md overflow-hidden">
                                 {renderContentAccordingToMimeType(content)}
