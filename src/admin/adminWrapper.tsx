@@ -41,7 +41,7 @@ const AdminWrapper = (): JSX.Element => {
                 email: authorMetadata.email,
             }
         } catch (error) {
-            console.log("Erro ao carregar arquivo do IPFS");
+            console.log("Error when loading file from IPFS");
         }
         setValue([...storedValue, contractDetails]);
     }

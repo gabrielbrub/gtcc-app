@@ -11,8 +11,6 @@ import { IPFSContext } from "./components/ipfsContext";
 export const App = () => {
     const [ipfs, isOnline, getFile] = useIPFS();
 
-    useEffect(() => {console.log("IS ONLINE" + isOnline)}, [isOnline])
-
     return (
         <React.StrictMode>
             <IPFSContext.Provider value= {{ ipfs, isOnline, getFile }}>
