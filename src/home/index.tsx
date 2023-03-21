@@ -74,11 +74,11 @@ const Home = () => {
 
     useEffect(() => {
         const author = storedValue.find((contract: AuthorDetails) => contract.contractData.address === authorAddress);
-        if (author && provider) {
+        if (author && provider && isOnline) {
             setAuthorDetails(storedValue.find((contract: AuthorDetails) => contract.contractData.address === authorAddress));
             loadContentsFromBlockchain();
         }
-    }, [provider]);
+    }, [provider, isOnline]);
 
     const renderContentAccordingToMimeType = (content: Content): JSX.Element => {
         if (content.mimeType.includes('image')) {

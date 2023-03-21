@@ -23,6 +23,8 @@ const Admin = () => {
     const MySwal = withReactContent(Swal);
 
     const getMetadataFromIpfs = async (cid: string): Promise<ContentMetadata> => {
+        console.log(ipfs);
+        console.log(isOnline);
         if (ipfs && isOnline) {
             const stream = ipfs.cat(cid);
             let concatenatedChunks = new Uint8Array(0);
@@ -159,11 +161,11 @@ const Admin = () => {
 
     useEffect(() => {
         const author = storedValue.find((contract: AuthorDetails) => contract.contractData.address === authorAddress);
-        if (author) {
+        if (author && isOnline && signerAddress) {
             setAuthorDetails(storedValue.find((contract: AuthorDetails) => contract.contractData.address === authorAddress));
             loadContentsFromBlockchain();
         }
-    }, [signerAddress]);
+    }, [signerAddress, isOnline]);
 
     return (
         <div>
