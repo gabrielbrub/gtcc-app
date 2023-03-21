@@ -50,7 +50,7 @@ const Home = () => {
                 }
                 const content = {
                     mimeType: ethers.utils.parseBytes32String(event.args.mimeType),
-                    licenseType: ethers.utils.parseBytes32String(event.args.mimeType),
+                    licenseType: ethers.utils.parseBytes32String(event.args.licenseType),
                     contentCid: event.args.contentCid,
                     metadataCid: event.args.metadataCid,
                     contractData: {
