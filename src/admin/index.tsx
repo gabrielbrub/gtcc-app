@@ -24,8 +24,6 @@ const Admin = () => {
     const MySwal = withReactContent(Swal);
 
     const getMetadataFromIpfs = async (cid: string): Promise<ContentMetadata> => {
-        console.log(ipfs);
-        console.log(isOnline);
         if (ipfs && isOnline) {
             const stream = ipfs.cat(cid);
             let concatenatedChunks = new Uint8Array(0);

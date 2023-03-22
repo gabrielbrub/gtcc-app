@@ -35,18 +35,13 @@ const Deploy = () => {
 
     console.log(contract.deployTransaction.hash);
 
-    // The contract is NOT deployed yet; we must wait until it is mined
     await contract.deployed();
 
     return contract.address;
-
-    /*       if (provider)
-            getTransactionsByType(provider, await signer?.getAddress() || '', contentHubBytecode.object) */
   };
 
 
   const submitForm = async () => {
-    console.log(name);
     const cid = await pinContentToIPFS();
     const address = await deployAuthorContract(cid);
 
@@ -72,7 +67,6 @@ const Deploy = () => {
       name: name,
       email: email,
     };
-    console.log(newObj);
     setValue([...storedValue, contractDetails]);
   }
 
