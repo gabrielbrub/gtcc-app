@@ -10,12 +10,13 @@ import withReactContent from 'sweetalert2-react-content'
 import { useNavigate } from "react-router-dom";
 import { IpfsButton } from "../components/ipfsButton";
 import { IPFSContext } from "../components/ipfsContext";
+import { EthLabel } from "../components/ethLabel";
 
 const Deploy = () => {
   const [metadata, setMetadata] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [name, setName] = useState<string>('');
-  const { ipfs, isOnline, getFile } = useContext(IPFSContext);  
+  const { ipfs, isOnline, getFile } = useContext(IPFSContext);
   const [provider, signer, isOnlineETh, signerAddress] = useEth();
   const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
   const MySwal = withReactContent(Swal);
@@ -98,7 +99,7 @@ const Deploy = () => {
       <main className='max-w-screen-lg mx-auto'>
         <div className='flex flex-row mt-1 justify-between'>
           <IpfsButton/>
-          <span>{`Connected wallet address: ${signerAddress}`}</span>
+          <EthLabel signerAddress={signerAddress}/>
         </div>
         <div className="mt-5">
           <div className="md:grid md:grid-cols-3 md:gap-6">

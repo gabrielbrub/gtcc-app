@@ -3,6 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
+import { EthLabel } from "../components/ethLabel";
 import { IpfsButton } from "../components/ipfsButton";
 import { IPFSContext } from "../components/ipfsContext";
 import Navbar from "../components/navBar";
@@ -173,7 +174,7 @@ const Admin = () => {
             <main className='max-w-screen-lg mx-auto mb-4'>
                 <div className='flex flex-row mt-1 justify-between'>
                     <IpfsButton />
-                    <span>{`Connected wallet address: ${signerAddress}`}</span>
+                    <EthLabel signerAddress={signerAddress} />
                 </div>
                 {authorDetails && <div className='flex flex-row justify-between mt-4'>
                     <div className='flex flex-col'>
