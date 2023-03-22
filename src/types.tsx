@@ -33,6 +33,7 @@ export interface Content {
     contentCid: string;
     metadataCid: string;
     contractData: ContentDetails;
+    date: string;
 }
 
 export interface ContentDetails {

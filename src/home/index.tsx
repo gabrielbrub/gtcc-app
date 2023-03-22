@@ -7,15 +7,16 @@ import Navbar from "../components/navBar";
 import { useEth } from "../components/useEth";
 import { useLocalStorage } from "../components/useLocalStorage";
 import { authorAbi } from "../ContractsData";
+import { defaultIpfsGateway } from "../globals";
 import { AuthorDetails, Content, ContentMetadata } from "../types";
-import { promiseWithTimeout } from "../utils";
+import { formatDate, promiseWithTimeout } from "../utils";
 
 
 
 const Home = () => {
     const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
-    const { ipfs, isOnline, getFile } = useIPFSContext();  
-    const [provider, signer, isOnlineETh, signerAddress] = useEth(false);
+    const { ipfs, isOnline, getFile } = useIPFSContext();
+    const [provider, signer, isOnlineETh, signerAddress, getEventDate] = useEth(false);
     const { authorAddress } = useParams();
     const [authorDetails, setAuthorDetails] = useState<AuthorDetails>();
     const [contents, setContents] = useState<Content[]>([]);
@@ -44,7 +45,7 @@ const Home = () => {
             getFile(event.args.contentCid).then(async (contentFile: File) => {
                 let contentMetadata;
                 try {
-                    contentMetadata = await promiseWithTimeout(getMetadataFromIpfs(event.args.metadataCid), 100000);
+                    contentMetadata = await promiseWithTimeout(getMetadataFromIpfs(event.args.metadataCid), 15000);
                 } catch (e) {
                     console.error(e);
                 }
@@ -53,6 +54,7 @@ const Home = () => {
                     licenseType: ethers.utils.parseBytes32String(event.args.licenseType),
                     contentCid: event.args.contentCid,
                     metadataCid: event.args.metadataCid,
+                    date: formatDate(await getEventDate(event)),
                     contractData: {
                         contentUrl: URL.createObjectURL(contentFile),
                         content: contentFile,
@@ -82,10 +84,10 @@ const Home = () => {
 
     const renderContentAccordingToMimeType = (content: Content): JSX.Element => {
         if (content.mimeType.includes('image')) {
-            return <img src={content.contractData.contentUrl} className="w-full" />;
+            return <img src={content.contractData.contentUrl} className='w-full h-[300px] max-w-full' />;
         } else if (content.mimeType.includes('video')) {
             return (
-                <video className="w-full" controls>
+                <video className='w-full h-full max-w-full object-cover object-center' controls>
                     <source src={content.contractData.contentUrl} type={content.mimeType} />
                     Your browser does not support the video tag.
                 </video>
@@ -98,7 +100,7 @@ const Home = () => {
         <div>
             <Navbar />
             <main className='max-w-screen-lg mx-auto mb-4'>
-                <IpfsButton/>
+                <IpfsButton />
                 {authorDetails && <div className='flex flex-row justify-between mt-4'>
                     <div className='flex flex-col'>
                         <label className='text-sm font-semibold' htmlFor='adress'>Author address</label>
@@ -118,17 +120,22 @@ const Home = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                     {contents.map((content: Content) => {
                         return (
-                            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                                {renderContentAccordingToMimeType(content)}
+                            <div className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer" onClick={() => {
+                                const url = defaultIpfsGateway + content.contentCid;
+                                window.open(url);
+                            }}>
+                                <div className="w-full h-[300px] overflow-hidden">
+                                    {renderContentAccordingToMimeType(content)}
+                                </div>
                                 <div className="p-4">
                                     {content.contractData.metadata && <h2 className="text-lg font-semibold mb-2">{content.contractData.metadata.title}</h2>}
                                     {content.contractData.metadata && <p className="text-gray-700 mb-2">{content.contractData.metadata.description}</p>}
-                                    <p className="text-gray-500 text-sm">{content.licenseType}</p>
+                                    {content.licenseType && <p className="text-gray-500 text-sm mb-2">{'License: ' + content.licenseType}</p>}
+                                    <p className="text-gray-500 text-sm">{content.date}</p>
                                 </div>
                             </div>
                         );
                     })}
-
                 </div>
             </main>
         </div>

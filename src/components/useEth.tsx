@@ -2,7 +2,7 @@ import { ethers, Signer } from 'ethers';
 import { useEffect, useState } from 'react';
 
 export const useEth = (requestSigner: boolean = true): [ethers.providers.Web3Provider |
-  undefined, ethers.providers.JsonRpcSigner | undefined, boolean, string] => {
+  undefined, ethers.providers.JsonRpcSigner | undefined, boolean, string, (event: ethers.Event) => Promise<Date>] => {
 
   const [isOnlineEth, setIsOnlineEth] = useState<boolean>(false);
   const [provider, setProvider] = useState<ethers.providers.Web3Provider>();
@@ -19,6 +19,21 @@ export const useEth = (requestSigner: boolean = true): [ethers.providers.Web3Pro
     }
     asyncFunc();
   }, [signer]);
+
+
+  async function getEventDate(event: ethers.Event): Promise<Date> {
+    const blockNumber = event.blockNumber;
+    if (!blockNumber) {
+      throw new Error('Block number not available for this event.');
+    }
+  
+    const block = await provider!.getBlock(blockNumber);
+    const timestamp = block.timestamp;
+  
+    const date = new Date(timestamp * 1000);
+  
+    return date;
+  }
 
   const connectToProvider = (): ethers.providers.Web3Provider | undefined => {
     if (typeof window.ethereum !== "undefined" && provider === undefined) {
@@ -103,6 +118,6 @@ export const useEth = (requestSigner: boolean = true): [ethers.providers.Web3Pro
 
   }, [provider]);
 
-  return [provider, signer, isOnlineEth, signerAddress];
+  return [provider, signer, isOnlineEth, signerAddress, getEventDate];
 };
 

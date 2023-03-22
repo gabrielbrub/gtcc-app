@@ -9,13 +9,14 @@ import Navbar from "../components/navBar";
 import { useEth } from "../components/useEth";
 import { useLocalStorage } from "../components/useLocalStorage";
 import { authorAbi } from "../ContractsData";
+import { defaultIpfsGateway } from "../globals";
 import { AuthorDetails, Content, ContentMetadata } from "../types";
-import { promiseWithTimeout } from "../utils";
+import { formatDate, promiseWithTimeout } from "../utils";
 
 const Admin = () => {
     const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
     const { ipfs, isOnline, getFile } = useContext(IPFSContext);
-    const [provider, signer, isOnlineETh, signerAddress] = useEth();
+    const [provider, signer, isOnlineETh, signerAddress, getEventDate] = useEth();
     const [showNewContentModal, setShowNewContentModal] = useState<boolean>(false);
     const { authorAddress } = useParams();
     const [authorDetails, setAuthorDetails] = useState<AuthorDetails>();
@@ -58,6 +59,7 @@ const Admin = () => {
                     licenseType: ethers.utils.parseBytes32String(event.args.licenseType),
                     contentCid: event.args.contentCid,
                     metadataCid: event.args.metadataCid,
+                    date: formatDate(await getEventDate(event)),
                     contractData: {
                         contentUrl: URL.createObjectURL(contentFile),
                         content: contentFile,
@@ -108,7 +110,7 @@ const Admin = () => {
                 'authorAddress': authorAddress,
             };
             const metadataCid = await pinMetadataToIPFS(contentMetadata);
-    
+
             if (authorAddress) {
                 console.log(signerAddress);
                 console.log(signer);
@@ -133,7 +135,7 @@ const Admin = () => {
                         timer: 3000,
                         title: "Transaction sent.",
                         text: " Please wait for confirmation. Reload the page in a few minutes and" +
-                        " you should be able to see it."
+                            " you should be able to see it."
                     });
                     authorContract.off("PublishEventCC", eventListener);
                 };
@@ -141,16 +143,16 @@ const Admin = () => {
             }
         } catch (e) {
             alert("Something went wrong");
-            throw(e);
+            throw (e);
         }
     };
 
     const renderContentAccordingToMimeType = (content: Content): JSX.Element => {
         if (content.mimeType.includes('image')) {
-            return <img src={content.contractData.contentUrl} className="w-full" />;
+            return <img src={content.contractData.contentUrl} className='w-full h-[300px] max-w-full' />;
         } else if (content.mimeType.includes('video')) {
             return (
-                <video className="w-full" controls>
+                <video className='w-full h-full max-w-full object-cover object-center' controls>
                     <source src={content.contractData.contentUrl} type={content.mimeType} />
                     Your browser does not support the video tag.
                 </video>
@@ -191,7 +193,7 @@ const Admin = () => {
                     }
                 </div>}
                 <h1 className='font-semibold mt-4 mb-2'>Published contents</h1>
-                <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md" onClick={() => {
+                <button className='bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md' onClick={() => {
                     setShowNewContentModal(true);
                 }}>
                     Add new
@@ -241,12 +243,18 @@ const Admin = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {contents.map((content: Content) => {
                         return (
-                            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                                {renderContentAccordingToMimeType(content)}
+                            <div className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer" onClick={() => {
+                                const url = defaultIpfsGateway + content.contentCid;
+                                window.open(url);
+                            }}>
+                                <div className="w-full h-[300px] overflow-hidden">
+                                    {renderContentAccordingToMimeType(content)}
+                                </div>
                                 <div className="p-4">
                                     {content.contractData.metadata && <h2 className="text-lg font-semibold mb-2">{content.contractData.metadata.title}</h2>}
                                     {content.contractData.metadata && <p className="text-gray-700 mb-2">{content.contractData.metadata.description}</p>}
-                                    <p className="text-gray-500 text-sm">{content.licenseType}</p>
+                                    {content.licenseType && <p className="text-gray-500 text-sm mb-2">{'License: ' + content.licenseType}</p>}
+                                    <p className="text-gray-500 text-sm">{content.date}</p>
                                 </div>
                             </div>
                         );
