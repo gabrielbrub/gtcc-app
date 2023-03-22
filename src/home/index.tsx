@@ -9,7 +9,7 @@ import { useLocalStorage } from "../components/useLocalStorage";
 import { authorAbi } from "../ContractsData";
 import { defaultIpfsGateway } from "../globals";
 import { AuthorDetails, Content, ContentMetadata } from "../types";
-import { formatDate, promiseWithTimeout } from "../utils";
+import { compareByDate, formatDate, promiseWithTimeout } from "../utils";
 
 
 
@@ -118,7 +118,7 @@ const Home = () => {
                 </div>}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                    {contents.map((content: Content) => {
+                    {contents.sort(compareByDate).map((content: Content) => {
                         return (
                             <div className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer" onClick={() => {
                                 const url = defaultIpfsGateway + content.contentCid;

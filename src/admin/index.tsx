@@ -241,7 +241,7 @@ const Admin = () => {
                 </div>}
                 <hr className='mt-3 mb-3'></hr>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {contents.map((content: Content) => {
+                    {contents.sort(compareByDate).map((content: Content) => {
                         return (
                             <div className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer" onClick={() => {
                                 const url = defaultIpfsGateway + content.contentCid;

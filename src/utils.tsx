@@ -1,3 +1,5 @@
+import { Content } from "./types";
+
 export function promiseWithTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   const timeoutPromise = new Promise<T>((_, reject) => {
     const timeoutId = setTimeout(() => {
@@ -20,4 +22,10 @@ export const formatDate = (date: Date): string => {
   const year = date.getFullYear();
 
   return `${day}/${month}/${year}`;
+}
+
+export const compareByDate = (a: Content, b: Content): number => {
+  const aDate = new Date(a.date.split('/').reverse().join('/'));
+  const bDate = new Date(b.date.split('/').reverse().join('/'));
+  return bDate.getTime() - aDate.getTime();
 }
