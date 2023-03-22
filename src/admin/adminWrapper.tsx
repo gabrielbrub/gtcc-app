@@ -6,7 +6,7 @@ import { useIPFSContext } from "../components/ipfsContext";
 import { useEth } from "../components/useEth";
 import { useLocalStorage } from "../components/useLocalStorage";
 import { authorAbi } from "../ContractsData";
-import Home from "../home";
+import Home from "../author";
 import { AuthorDetails } from "../types";
 
 enum Destination {

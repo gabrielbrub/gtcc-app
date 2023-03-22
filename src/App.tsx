@@ -4,7 +4,7 @@ import { HashRouter, Route, Routes } from 'react-router-dom'
 import AdminWrapper from './admin/adminWrapper'
 import ContractSelection from './admin/contract-selection'
 import Deploy from './deploy'
-import Home from './home'
+import Home from './author'
 import './index.css'
 import { IPFSContext } from "./components/ipfsContext";
 
