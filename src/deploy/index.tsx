@@ -123,6 +123,7 @@ const Deploy = () => {
                       <div className="col-span-6 sm:col-span-3">
                         <label htmlFor="first-name" className="block text-sm font-medium text-gray-700">Name</label>
                         <input
+                          required
                           onChange={(e: ChangeEvent<HTMLInputElement>) => setName((e.target as HTMLInputElement).value)}
                           value={name}
                           type="text" name="first-name" id="first-name" autoComplete="given-name" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></input>
@@ -130,7 +131,7 @@ const Deploy = () => {
 
                       <div className="col-span-6 sm:col-span-4">
                         <label htmlFor="email-address" className="block text-sm font-medium text-gray-700">Email</label>
-                        <input type="text" name="email-address" id="email-address" autoComplete="email" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></input>
+                        <input type="email" required name="email-address" id="email-address" autoComplete="email" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></input>
                       </div>
 
                     </div>

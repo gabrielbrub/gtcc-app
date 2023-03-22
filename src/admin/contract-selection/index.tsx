@@ -10,7 +10,7 @@ import { AuthorDetails } from "../../types";
 
 const ContractSelection = () => {
     const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
-    const { ipfs, isOnline } = useIPFSContext();  
+    const { ipfs, isOnline } = useIPFSContext();
     const [provider, signer, isOnlineETh, signerAddress] = useEth();
     const [authorDetails, setAuthorDetails] = useState<AuthorDetails[]>([]);
     const [newAuthorAddress, setNewAuthorAddress] = useState<string>('');
@@ -87,17 +87,21 @@ const ContractSelection = () => {
             <Navbar />
             <main className='max-w-screen-lg mx-auto'>
                 <h1 className='font-semibold my-2'>Deployed contracts</h1>
-                <div className="flex items-center bg-gray-100 p-4 rounded-md max-w-[50%]">
+                <form className="flex items-center bg-gray-100 p-4 rounded-md max-w-[50%]" onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
+                    e.preventDefault();
+                    handleAdd(newAuthorAddress);
+                }}>
                     <input type="text" value={newAuthorAddress}
+                        pattern="^0x[a-fA-F0-9]{40}$"
+                        title="Enter a valid Ethereum address"
+                        required
                         onChange={(e: ChangeEvent<HTMLInputElement>) => setNewAuthorAddress((e.target as HTMLInputElement).value)}
                         className="px-4 py-2 w-full rounded-l-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
                         placeholder="Enter existing author address..." />
-                    <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-r-md" onClick={() => {
-                        handleAdd(newAuthorAddress);
-                    }}>
+                    <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-r-md">
                         Add
                     </button>
-                </div>
+                </form>
 
                 <hr className='mt-3 mb-3'></hr>
 

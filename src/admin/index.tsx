@@ -11,7 +11,7 @@ import { useLocalStorage } from "../components/useLocalStorage";
 import { authorAbi } from "../ContractsData";
 import { defaultIpfsGateway } from "../globals";
 import { AuthorDetails, Content, ContentMetadata } from "../types";
-import { formatDate, promiseWithTimeout } from "../utils";
+import { compareByDate, formatDate, promiseWithTimeout } from "../utils";
 
 const Admin = () => {
     const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
@@ -204,7 +204,7 @@ const Admin = () => {
                             <label className="block text-gray-700 font-bold mb-2" htmlFor="title">
                                 Title
                             </label>
-                            <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            <input required maxLength={30} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                 name="title" id="title" type="text" placeholder="Title" />
                         </div>
                         <div className="mb-4">
@@ -212,14 +212,14 @@ const Admin = () => {
                                 License type
                             </label>
                             <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                name="license" id="license" type="text" placeholder="License type" />
+                                name="license" required id="license" type="text" placeholder="License type" />
                             <a href="https://creativecommons.org/choose/" className="text-sm text-blue-500 hover:text-blue-700">Go to Creative Commons license chooser</a>
                         </div>
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2" htmlFor="description">
                                 Description
                             </label>
-                            <textarea className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            <textarea maxLength={300} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                 name="description" id="description" placeholder="Enter a description"></textarea>
                         </div>
                         <div className="mb-4">
@@ -227,7 +227,7 @@ const Admin = () => {
                                 File
                             </label>
                             <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                name="file" id="file" type="file" />
+                                required name="file" id="file" type="file" />
                         </div>
                         <div className="flex justify-end">
                             <button type="button" className="py-2 mr-2 px-4 bg-red-600 text-white rounded-md hover:bg-red-700"
