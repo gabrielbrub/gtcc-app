@@ -100,7 +100,9 @@ const AuthorPage = () => {
         <div>
             <Navbar />
             <main className='max-w-screen-lg mx-auto mb-4'>
-                <IpfsButton />
+                <div className='flex flex-row mt-1 justify-between'>
+                    <IpfsButton />
+                </div>
                 {authorDetails && <div className='flex flex-row justify-between mt-4'>
                     <div className='flex flex-col'>
                         <label className='text-sm font-semibold' htmlFor='adress'>Author address</label>
