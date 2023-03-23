@@ -128,6 +128,8 @@ const Admin = () => {
                     metadataCid,
                 );
                 const eventListener = async (eventArgs: any) => {
+                    setShowNewContentModal(false);
+                    setLoading(false);
                     console.log('Event received:', eventArgs);
                     MySwal.fire({
                         icon: 'success',
@@ -143,9 +145,9 @@ const Admin = () => {
             }
         } catch (e) {
             alert("Something went wrong");
+            setShowNewContentModal(false);
+            setLoading(false);
         }
-        setShowNewContentModal(false);
-        setLoading(false);
     };
 
     const renderContentAccordingToMimeType = (content: Content): JSX.Element => {
