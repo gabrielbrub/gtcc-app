@@ -23,6 +23,7 @@ const Admin = () => {
     const [authorDetails, setAuthorDetails] = useState<AuthorDetails>();
     const [contents, setContents] = useState<Content[]>([]);
     const MySwal = withReactContent(Swal);
+    const [loading, setLoading] = useState(false);
 
     const getMetadataFromIpfs = async (cid: string): Promise<ContentMetadata> => {
         if (ipfs && isOnline) {
@@ -98,6 +99,7 @@ const Admin = () => {
 
     const publishContent = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
+        setLoading(true);
         try {
             const formData = new FormData(e.currentTarget);
             const data = Object.fromEntries(formData);
@@ -125,7 +127,6 @@ const Admin = () => {
                     contentCid,
                     metadataCid,
                 );
-                setShowNewContentModal(false);
                 const eventListener = async (eventArgs: any) => {
                     console.log('Event received:', eventArgs);
                     MySwal.fire({
@@ -142,8 +143,9 @@ const Admin = () => {
             }
         } catch (e) {
             alert("Something went wrong");
-            throw (e);
         }
+        setShowNewContentModal(false);
+        setLoading(false);
     };
 
     const renderContentAccordingToMimeType = (content: Content): JSX.Element => {
@@ -232,8 +234,13 @@ const Admin = () => {
                             <button type="button" className="py-2 mr-2 px-4 bg-red-600 text-white rounded-md hover:bg-red-700"
                                 onClick={() => { setShowNewContentModal(false) }}
                             >Cancel</button>
-                            <button className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md focus:outline-none focus:shadow-outline" type="submit">
-                                Publish
+                            <button
+                                className={`bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-md focus:outline-none focus:shadow-outline ${loading ? 'opacity-50 cursor-wait' : ''
+                                    }`}
+                                type="submit"
+                                disabled={loading}
+                            >
+                                {loading ? 'Loading...' : 'Publish'}
                             </button>
                         </div>
                     </form>
