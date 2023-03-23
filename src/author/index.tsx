@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { IpfsButton } from "../components/ipfsButton";
+import { IpfsButton } from "../components/IpfsButton";
 import { useIPFSContext } from "../components/ipfsContext";
 import Navbar from "../components/navBar";
 import { useEth } from "../components/useEth";
