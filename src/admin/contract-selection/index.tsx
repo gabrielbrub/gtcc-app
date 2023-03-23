@@ -50,28 +50,34 @@ const ContractSelection = () => {
     const handleAdd = async (authorAddress: string): Promise<void> => {
         const asyncFunc = async () => {
             if (isOnline && isOnlineETh) {
-                const authorContract = new ethers.Contract(authorAddress, authorAbi, signer);
-                const ownerAddress = await authorContract.owner();
-                if (ownerAddress !== signerAddress) {
-                    alert("Target author contract owner address doesn't match the connected wallet address. The owner address is: " + ownerAddress
-                        + "\nAnd the connected wallet address is: " + signerAddress);
-                    return;
+                try {
+                    const authorContract = new ethers.Contract(authorAddress, authorAbi, signer);
+                    const ownerAddress = await authorContract.owner();
+                    if (ownerAddress !== signerAddress) {
+                        alert("Target author contract owner address doesn't match the connected wallet address. The owner address is: " + ownerAddress
+                            + "\nAnd the connected wallet address is: " + signerAddress);
+                        return;
+                    }
+                    const authorMetadataCid = await authorContract.metadata();
+                    const metadata = await getMetadataFromIpfs(authorMetadataCid);
+    
+                    const newAuthorDetails = {
+                        contractData: {
+                            owner: await authorContract.owner(),
+                            address: authorAddress,
+                            metadata: authorMetadataCid,
+                        },
+                        name: metadata.name,
+                        email: metadata.email,
+                        
+                    }
+                    setValue([...storedValue, newAuthorDetails]);
+                    setAuthorDetails([...authorDetails, newAuthorDetails]);
+                } catch(e) {
+                    alert("Failed to retrieve author. Please check the address and try again.")
                 }
-                const authorMetadataCid = await authorContract.metadata();
-                const metadata = await getMetadataFromIpfs(authorMetadataCid);
-
-                const newAuthorDetails = {
-                    contractData: {
-                        owner: await authorContract.owner(),
-                        address: authorAddress,
-                        metadata: authorMetadataCid,
-                    },
-                    name: metadata.name,
-                    email: metadata.email,
-                }
-
-                setValue([...storedValue, newAuthorDetails]);
-                setAuthorDetails([...authorDetails, newAuthorDetails]);
+            } else {
+                alert("Failed to retrieve author. Please check your connection to IPFS and Metamask and try again.");
             }
         }
         if (storedValue.some((contract: AuthorDetails) => contract.contractData.address === authorAddress)) {
