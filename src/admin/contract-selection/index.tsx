@@ -104,25 +104,38 @@ const ContractSelection = () => {
                 </form>
 
                 <hr className='mt-3 mb-3'></hr>
-
-                {authorDetails.map((contract: AuthorDetails) => <div className="block max-w-md rounded-lg bg-white p-6 shadow-lg mb-3">
-                    <div className='flex flex-col'>
-                        <label className='text-sm font-medium' htmlFor='adress'>Author address</label>
-                        <span id='address'>{contract.contractData.address}</span>
-                        <label className='text-sm font-medium' htmlFor='details'>Author details</label>
-                        <div id='author-details' className='flex flex-col ml-2'>
-                            <span className='text-sm font-medium' id='name'>Name: {contract.name}</span>
-                            <span className='text-sm font-medium' id='email'>Email: {contract.email}</span>
+                <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4 justify-items-stretch">
+                    {authorDetails.map((contract: AuthorDetails) => (
+                        <div className="block max-w-md rounded-lg bg-white p-6 shadow-lg mb-3">
+                            <div className="flex flex-col">
+                                <label className="text-sm font-medium" htmlFor="address">
+                                    Author address
+                                </label>
+                                <span id="address">{contract.contractData.address}</span>
+                                <label className="text-sm font-medium" htmlFor="details">
+                                    Author details
+                                </label>
+                                <div id="author-details" className="flex flex-col ml-2">
+                                    <span className="text-sm font-medium" id="name">
+                                        Name: {contract.name}
+                                    </span>
+                                    <span className="text-sm font-medium" id="email">
+                                        Email: {contract.email}
+                                    </span>
+                                </div>
+                                <button
+                                    className="bg-blue-500 mt-4 hover:bg-blue-700 text-white py-2 px-4 rounded-md focus:outline-none focus:shadow-outline"
+                                    type="button"
+                                    onClick={() => {
+                                        navigate(`/admin/${contract.contractData.address}`);
+                                    }}
+                                >
+                                    Manage
+                                </button>
+                            </div>
                         </div>
-                        <button className="bg-blue-500 mt-4 hover:bg-blue-700 text-white py-2 px-4 rounded-md focus:outline-none focus:shadow-outline" type="button"
-                            onClick={() => {
-                                navigate(`/admin/${contract.contractData.address}`);
-                            }}>
-                            Manage
-                        </button>
-                    </div>
+                    ))}
                 </div>
-                )}
             </main>
         </div>
     );
