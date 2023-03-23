@@ -9,7 +9,7 @@ const Navbar: React.FC = () => {
       <div className='px-2 flex justify-between items-center w-full max-w-screen-lg m-auto'>
         <div className='flex items-center justify-start'>
           <h1 className='text-3xl font-bold mr-4 sm:text-4xl cursor-pointer'
-            onClick={() => navigate('/deploy')}>gTCC</h1>
+            onClick={() => navigate('/')}>gTCC</h1>
         </div>
       </div>
     </div>

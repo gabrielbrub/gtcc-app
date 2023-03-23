@@ -199,7 +199,7 @@ const Admin = () => {
                 <button className='bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md' onClick={() => {
                     setShowNewContentModal(true);
                 }}>
-                    Add new
+                    Add
                 </button>
                 {showNewContentModal && <div className="w-full max-w-md mx-auto">
                     <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={async (e: React.FormEvent<HTMLFormElement>) => await publishContent(e)}>

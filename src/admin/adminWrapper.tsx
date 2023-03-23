@@ -6,7 +6,7 @@ import { useIPFSContext } from "../components/ipfsContext";
 import { useEth } from "../components/useEth";
 import { useLocalStorage } from "../components/useLocalStorage";
 import { authorAbi } from "../ContractsData";
-import Home from "../author";
+import AuthorPage from "../author";
 import { AuthorDetails } from "../types";
 
 enum Destination {
@@ -95,7 +95,7 @@ const AdminWrapper = (): JSX.Element => {
     if (destination === Destination.ADMIN) {
         return <Admin />;
     } else if (destination === Destination.USER) {
-        return <Home />
+        return <AuthorPage />
     }
     return <>Loading...</>;
 

@@ -13,7 +13,7 @@ import { compareByDate, formatDate, promiseWithTimeout } from "../utils";
 
 
 
-const Home = () => {
+const AuthorPage = () => {
     const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
     const { ipfs, isOnline, getFile } = useIPFSContext();
     const [provider, signer, isOnlineETh, signerAddress, getEventDate] = useEth(false);
@@ -142,4 +142,4 @@ const Home = () => {
     );
 }
 
-export default Home;
+export default AuthorPage;
