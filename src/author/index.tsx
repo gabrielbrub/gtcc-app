@@ -118,7 +118,7 @@ const AuthorPage = () => {
                         </div>
                     }
                 </div>}
-
+                <hr className='mt-3 mb-3'></hr>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                     {contents.sort(compareByDate).map((content: Content) => {
                         return (
