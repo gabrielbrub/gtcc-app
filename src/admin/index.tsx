@@ -230,7 +230,7 @@ const Admin = () => {
                                 File
                             </label>
                             <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                required name="file" id="file" type="file" />
+                                required name="file" id="file" type="file" accept="image/*,video/*"/>
                         </div>
                         <div className="flex justify-end">
                             <button type="button" className="py-2 mr-2 px-4 bg-red-600 text-white rounded-md hover:bg-red-700"
