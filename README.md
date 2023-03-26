@@ -22,19 +22,22 @@ Preencha os dados conforme a url do RPC server indicado no Ganache, e 1337 em "I
 <table>
   <tr>
     <td>
-      <img src="tutorial/add-network.png" alt="Alt Text 1">
+      <img src="tutorial/add-network.png">
     </td>
     <td>
-      <img src="tutorial/mm.png" alt="Alt Text 2" style="height: 600px;">
+      <img src="tutorial/mm.png" style="height: 600px;">
     </td>
   </tr>
 </table>
 
 
+- Conecte sua carteira Metamask a um dos endereços gerados no Ganache. Para isso, clique no avatar no canto superior direito da extensão Metamask, e em seguida em Importar Conta. Será solicitada uma chave privada. Para obtê-la, no Ganache, clique em um dos ícones de chave que localizado ao lado de cada endereço e copie a chave privada.
+
+<img src="tutorial/ganache.png">
 
 - Para publicar conteúdos usando seu nó local IPFS, você deve liberar os métodos PUT e POST nas configurações
 
- <img src="tutorial/ipfs-config.png" alt="Alt Text 2">
+<img src="tutorial/ipfs-config.png">
 
 - Na aplicação, nas rotas /admin ou /deploy, clique no botão IPFS e configure o endereço apropriado para o seu nó.
 
