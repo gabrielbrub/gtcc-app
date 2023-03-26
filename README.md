@@ -8,7 +8,7 @@
 
 /#/ -> Página inicial. Exibe os endereços de contratos do tipo Autor salvos no local storage. Permite adicionar um novo endereço.   <br/>
 
-/[endereco_autor] -> Exibe os conteúdos publicados pelo autor especificado.   <br/>
+/#/[endereco_autor] -> Exibe os conteúdos publicados pelo autor especificado.   <br/>
 
 /#/admin -> Lista dos contratos de autor implantados pelo endereço atualmente conectado via metamask.   <br/>
 
