@@ -13,6 +13,8 @@ import { authorAbi } from "../ContractsData";
 import { defaultIpfsGateway } from "../globals";
 import { AuthorDetails, Content, ContentMetadata } from "../types";
 import { compareByDate, formatDate, promiseWithTimeout } from "../utils";
+import * as piexif from 'piexifjs';
+import { Buffer } from 'buffer';
 
 const Admin = () => {
     const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
@@ -98,13 +100,52 @@ const Admin = () => {
         return await pinContentToIPFS(metadataFile);
     }
 
+    function readFileAsDataURL(file: File): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                resolve(event.target?.result as string);
+            };
+            reader.onerror = function (error) {
+                reject(error);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+
+    function dataURLtoBlob(dataUrl: string): Blob {
+        const binary = atob(dataUrl.split(',')[1]);
+        const array = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+            array[i] = binary.charCodeAt(i);
+        }
+        return new Blob([array], { type: 'image/jpeg' });
+    }
+
     const publishContent = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
         setLoading(true);
         try {
             const formData = new FormData(e.currentTarget);
             const data = Object.fromEntries(formData);
-            const contentCid = await pinContentToIPFS(data.file as File);
+
+            let fileToPin = data.file as File;
+            if (fileToPin.type === "image/jpeg") {
+                const dataUrl = await readFileAsDataURL(data.file as File);
+                const jpegData = piexif.load(dataUrl);
+
+
+                jpegData["0th"][piexif.ImageIFD.XPComment] = [...Buffer.from(data.description as string, 'ucs2')];
+                jpegData["0th"][piexif.ImageIFD.Copyright] = data.license as string;
+                jpegData["0th"][piexif.ImageIFD.XPTitle] = [...Buffer.from(data.title as string, 'ucs2')];
+
+                const newDataUrl = piexif.insert(piexif.dump(jpegData), dataUrl);
+                const modifiedImageBlob = dataURLtoBlob(newDataUrl);
+                fileToPin = new File([modifiedImageBlob], modifiedImageBlob.name, { type: "image/jpeg" });
+            }
+            const contentCid = await pinContentToIPFS(fileToPin);
+
             const contentMetadata = {
                 'title': data.title,
                 'description': data.description,

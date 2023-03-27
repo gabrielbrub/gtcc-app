@@ -42,7 +42,6 @@ const AdminWrapper = (): JSX.Element => {
 
 
     if (isContractOwner) {
-        console.log("RETURN ADMIN");
         return <Admin />;
     } 
     return <></>;
