@@ -17,7 +17,7 @@ import { compareByDate, formatDate, promiseWithTimeout } from "../utils";
 const AuthorPage = () => {
     const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
     const { ipfs, isOnline, getFile } = useIPFSContext();
-    const { provider, getEventDate} = useEthContext();  
+    const { provider, getEventDate } = useEthContext();
     const { authorAddress } = useParams();
     const [authorDetails, setAuthorDetails] = useState<AuthorDetails>();
     const [contents, setContents] = useState<Content[]>([]);
@@ -123,10 +123,12 @@ const AuthorPage = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                     {contents.sort(compareByDate).map((content: Content) => {
                         return (
-                            <div className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer" onClick={() => {
-                                const url = defaultIpfsGateway + content.contentCid;
-                                window.open(url);
-                            }}>
+                            <div className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer"
+                                key={content.contentCid}
+                                onClick={() => {
+                                    const url = defaultIpfsGateway + content.contentCid;
+                                    window.open(url);
+                                }}>
                                 <div className="w-full h-[300px] overflow-hidden">
                                     {renderContentAccordingToMimeType(content)}
                                 </div>
