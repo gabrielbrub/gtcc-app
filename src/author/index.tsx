@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useEthContext } from "../components/EthContext";
 import { IpfsButton } from "../components/IpfsButton";
 import { useIPFSContext } from "../components/ipfsContext";
 import Navbar from "../components/navBar";
@@ -16,7 +17,7 @@ import { compareByDate, formatDate, promiseWithTimeout } from "../utils";
 const AuthorPage = () => {
     const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
     const { ipfs, isOnline, getFile } = useIPFSContext();
-    const [provider, signer, isOnlineETh, signerAddress, getEventDate] = useEth(false);
+    const { provider, getEventDate} = useEthContext();  
     const { authorAddress } = useParams();
     const [authorDetails, setAuthorDetails] = useState<AuthorDetails>();
     const [contents, setContents] = useState<Content[]>([]);

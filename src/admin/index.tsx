@@ -3,11 +3,11 @@ import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
+import { useEthContext } from "../components/EthContext";
 import { EthLabel } from "../components/EthLabel";
 import { IpfsButton } from "../components/IpfsButton";
 import { IPFSContext } from "../components/ipfsContext";
 import Navbar from "../components/navBar";
-import { useEth } from "../components/useEth";
 import { useLocalStorage } from "../components/useLocalStorage";
 import { authorAbi } from "../ContractsData";
 import { defaultIpfsGateway } from "../globals";
@@ -17,7 +17,7 @@ import { compareByDate, formatDate, promiseWithTimeout } from "../utils";
 const Admin = () => {
     const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
     const { ipfs, isOnline, getFile } = useContext(IPFSContext);
-    const [provider, signer, isOnlineETh, signerAddress, getEventDate] = useEth();
+    const { signerAddress, signer, getEventDate } = useEthContext();
     const [showNewContentModal, setShowNewContentModal] = useState<boolean>(false);
     const { authorAddress } = useParams();
     const [authorDetails, setAuthorDetails] = useState<AuthorDetails>();
@@ -45,31 +45,32 @@ const Admin = () => {
     }
 
     const parseQueryResultsAndUpdateComponentState = async (queryResult: any[]) => {
-        setContents([]);
+        const newContents = [];
         for (const event of queryResult) {
-            getFile(event.args.contentCid).then(async (contentFile: File) => {
-                let contentMetadata;
-                try {
-                    contentMetadata = await promiseWithTimeout(getMetadataFromIpfs(event.args.metadataCid), 20000);
-                } catch (e) {
-                    console.error(e);
-                }
-                const content = {
-                    mimeType: ethers.utils.parseBytes32String(event.args.mimeType),
-                    licenseType: ethers.utils.parseBytes32String(event.args.licenseType),
-                    contentCid: event.args.contentCid,
-                    metadataCid: event.args.metadataCid,
-                    date: formatDate(await getEventDate(event)),
-                    contractData: {
-                        contentUrl: URL.createObjectURL(contentFile),
-                        content: contentFile,
-                        metadata: contentMetadata,
-                    },
-                }
-                setContents(prev => [...prev, content]);
-            });
+            const contentFile = await getFile(event.args.contentCid);
+            let contentMetadata;
+            try {
+                contentMetadata = await promiseWithTimeout(getMetadataFromIpfs(event.args.metadataCid), 20000);
+            } catch (e) {
+                console.error(e);
+            }
+            const content = {
+                mimeType: ethers.utils.parseBytes32String(event.args.mimeType),
+                licenseType: ethers.utils.parseBytes32String(event.args.licenseType),
+                contentCid: event.args.contentCid,
+                metadataCid: event.args.metadataCid,
+                date: formatDate(await getEventDate(event)),
+                contractData: {
+                    contentUrl: URL.createObjectURL(contentFile),
+                    content: contentFile,
+                    metadata: contentMetadata,
+                },
+            }
+            newContents.push(content);
         }
+        setContents(newContents);
     }
+
 
     const loadContentsFromBlockchain = async () => {
         const authorContract = new ethers.Contract(authorAddress!, authorAbi, signer);
@@ -113,13 +114,6 @@ const Admin = () => {
             const metadataCid = await pinMetadataToIPFS(contentMetadata);
 
             if (authorAddress) {
-                console.log(signerAddress);
-                console.log(signer);
-                console.log(authorAddress);
-                console.log(ethers.utils.formatBytes32String((data.file as File).type));
-                console.log(ethers.utils.formatBytes32String(data.license as string));
-                console.log(contentCid);
-                console.log(metadataCid);
                 const authorContract = new ethers.Contract(authorAddress, authorAbi, signer);
                 await authorContract.publishCC(
                     ethers.utils.formatBytes32String((data.file as File).type),
@@ -144,6 +138,7 @@ const Admin = () => {
                 authorContract.on("PublishEventCC", eventListener);
             }
         } catch (e) {
+            console.error(e);
             alert("Something went wrong");
             setShowNewContentModal(false);
             setLoading(false);
@@ -230,7 +225,7 @@ const Admin = () => {
                                 File
                             </label>
                             <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                required name="file" id="file" type="file" accept="image/*,video/*"/>
+                                required name="file" id="file" type="file" accept="image/*,video/*" />
                         </div>
                         <div className="flex justify-end">
                             <button type="button" className="py-2 mr-2 px-4 bg-red-600 text-white rounded-md hover:bg-red-700"

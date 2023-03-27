@@ -2,23 +2,21 @@ import { ethers } from "ethers";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Admin from ".";
-import { useIPFSContext } from "../components/ipfsContext";
-import { useEth } from "../components/useEth";
+import { useEthContext } from "../components/EthContext";
 import { useLocalStorage } from "../components/useLocalStorage";
 import { authorAbi } from "../ContractsData";
 import { AuthorDetails } from "../types";
 
 const AdminWrapper = (): JSX.Element => {
-    const [provider, signer, isOnlineETh, signerAddress] = useEth(false);
+    const { signerAddress, provider } = useEthContext();  
     const { authorAddress } = useParams();
     const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
-    const [isContractOwner, setIsContractOwner] = useState<boolean | undefined>(undefined);
-    const { isOnline } = useIPFSContext();
+    const [isContractOwner, setIsContractOwner] = useState<boolean>(false);
     const navigate = useNavigate();
 
 
     const decideNavigation = async () => {
-        if (isOnline && isOnlineETh) {
+        if (signerAddress && provider) {
             try {
                 const authorContract = new ethers.Contract(authorAddress!, authorAbi, provider);
                 if (signerAddress === await authorContract.owner()) {
@@ -27,6 +25,7 @@ const AdminWrapper = (): JSX.Element => {
                     navigate(`/${authorAddress}`, { replace: true });
                 }
             } catch (e) {
+                console.error(e);
                 alert("Something went wrong when loading Author information. Please check your connection to Metamask.");
             }
         }
@@ -39,13 +38,14 @@ const AdminWrapper = (): JSX.Element => {
         } else {
             decideNavigation();
         }
-    }, [isOnline, isOnlineETh]);
+    }, [signerAddress, provider]);
 
 
     if (isContractOwner) {
+        console.log("RETURN ADMIN");
         return <Admin />;
     } 
-    return <>Loading...</>;
+    return <></>;
 
 }
 

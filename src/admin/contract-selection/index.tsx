@@ -1,9 +1,9 @@
 import { ethers } from "ethers";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useEthContext } from "../../components/EthContext";
 import { useIPFSContext } from "../../components/ipfsContext";
 import Navbar from "../../components/navBar";
-import { useEth } from "../../components/useEth";
 import { useLocalStorage } from "../../components/useLocalStorage";
 import { authorAbi } from "../../ContractsData";
 import { AuthorDetails } from "../../types";
@@ -11,7 +11,7 @@ import { AuthorDetails } from "../../types";
 const ContractSelection = () => {
     const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
     const { ipfs, isOnline } = useIPFSContext();
-    const [provider, signer, isOnlineETh, signerAddress] = useEth();
+    const { isOnlineEth, signerAddress, signer } = useEthContext();  
     const [authorDetails, setAuthorDetails] = useState<AuthorDetails[]>([]);
     const [newAuthorAddress, setNewAuthorAddress] = useState<string>('');
     const navigate = useNavigate();
@@ -49,7 +49,7 @@ const ContractSelection = () => {
 
     const handleAdd = async (authorAddress: string): Promise<void> => {
         const asyncFunc = async () => {
-            if (isOnline && isOnlineETh) {
+            if (isOnline && isOnlineEth) {
                 try {
                     const authorContract = new ethers.Contract(authorAddress, authorAbi, signer);
                     const ownerAddress = await authorContract.owner();

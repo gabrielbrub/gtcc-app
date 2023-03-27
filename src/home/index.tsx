@@ -2,10 +2,10 @@ import { ethers } from "ethers";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocalStorage } from "usehooks-ts";
+import { useEthContext } from "../components/EthContext";
 import { IpfsButton } from "../components/IpfsButton";
 import { useIPFSContext } from "../components/ipfsContext";
 import Navbar from "../components/navBar";
-import { useEth } from "../components/useEth";
 import { authorAbi } from "../ContractsData";
 import { AuthorDetails } from "../types";
 
@@ -13,7 +13,7 @@ import { AuthorDetails } from "../types";
 export const Home = (): JSX.Element => {
     const [authorDetails, setAuthorDetails] = useState<AuthorDetails[]>([]);
     const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
-    const [provider, signer, isOnlineETh, signerAddress] = useEth();
+    const { provider } = useEthContext();  
     const navigate = useNavigate();
     const { ipfs, isOnline } = useIPFSContext();
     const [newAuthorAddress, setNewAuthorAddress] = useState<string>('');

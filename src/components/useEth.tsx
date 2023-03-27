@@ -1,5 +1,6 @@
-import { ethers, Signer } from 'ethers';
+import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
+import { useSessionStorage } from 'usehooks-ts';
 
 export const useEth = (requestSigner: boolean = true): [ethers.providers.Web3Provider |
   undefined, ethers.providers.JsonRpcSigner | undefined, boolean, string, (event: ethers.Event) => Promise<Date>] => {
@@ -7,7 +8,8 @@ export const useEth = (requestSigner: boolean = true): [ethers.providers.Web3Pro
   const [isOnlineEth, setIsOnlineEth] = useState<boolean>(false);
   const [provider, setProvider] = useState<ethers.providers.Web3Provider>();
   const [signer, setSigner] = useState<ethers.providers.JsonRpcSigner>();
-  const [signerAddress, setSignerAddress] = useState<string>('');
+  const [signerAddress, setSignerAddress] = useSessionStorage<string>("@gtcc-signer-address", '');
+
 
   useEffect(() => {
     const asyncFunc = async () => {
@@ -70,9 +72,9 @@ export const useEth = (requestSigner: boolean = true): [ethers.providers.Web3Pro
   };
 
 
-  const handleAccountsChanged = async (accounts: string[]) => {
-    if (provider) {
-      const newSigner = await connectToSigner(provider);
+  const handleAccountsChanged = async (newProvider:ethers.providers.Web3Provider | undefined , accounts: string[]) => {
+    if (newProvider) {
+      const newSigner = await connectToSigner(newProvider);
       console.log('Wallet address changed to: ' + accounts[0]);
       const newSignerAddress = await newSigner?.getAddress();
       if (newSigner && newSignerAddress) {
@@ -80,15 +82,20 @@ export const useEth = (requestSigner: boolean = true): [ethers.providers.Web3Pro
         setSigner(newSigner);
       }
     }
-  }
-
+  };
+  
   useEffect(() => {
     const newProvider = connectToProvider();
     if (requestSigner) {
       connectToSigner(newProvider);
     }
-    window.ethereum.on('accountsChanged', handleAccountsChanged);
-    return () => window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+  
+    const handleNewAccounts = (accounts: string[]) => {
+      handleAccountsChanged(newProvider, accounts);
+    };
+  
+    window.ethereum.on('accountsChanged', handleNewAccounts);
+    return () => window.ethereum.removeListener('accountsChanged', handleNewAccounts);
   }, []);
 
   useEffect(() => {

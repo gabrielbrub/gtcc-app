@@ -1,8 +1,7 @@
 import { ethers } from "ethers";
-import { ChangeEvent, useContext, useEffect, useState } from 'react';
+import { useContext } from 'react';
 import Navbar from "../components/navBar";
 import { authorAbi, authorBytecode } from '../ContractsData'
-import { useEth } from "../components/useEth";
 import { useLocalStorage } from "../components/useLocalStorage";
 import { AuthorDetails } from "../types";
 import Swal from 'sweetalert2'
@@ -11,11 +10,11 @@ import { useNavigate } from "react-router-dom";
 import { IpfsButton } from "../components/IpfsButton";
 import { IPFSContext } from "../components/ipfsContext";
 import { EthLabel } from "../components/EthLabel";
+import { useEthContext } from "../components/EthContext";
 
 const Deploy = () => {
-  const [metadata, setMetadata] = useState<string>('');
-  const { ipfs, isOnline, getFile } = useContext(IPFSContext);
-  const [provider, signer, isOnlineETh, signerAddress] = useEth();
+  const { ipfs, isOnline } = useContext(IPFSContext);
+  const { signerAddress, signer } = useEthContext();  
   const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
   const MySwal = withReactContent(Swal);
   const navigate = useNavigate();
