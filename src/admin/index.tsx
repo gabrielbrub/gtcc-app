@@ -139,6 +139,7 @@ const Admin = () => {
                 jpegData["0th"][piexif.ImageIFD.XPComment] = [...Buffer.from(data.description as string, 'ucs2')];
                 jpegData["0th"][piexif.ImageIFD.Copyright] = data.license as string;
                 jpegData["0th"][piexif.ImageIFD.XPTitle] = [...Buffer.from(data.title as string, 'ucs2')];
+                jpegData["0th"][piexif.ImageIFD.Artist] = authorDetails?.name;
 
                 const newDataUrl = piexif.insert(piexif.dump(jpegData), dataUrl);
                 const modifiedImageBlob = dataURLtoBlob(newDataUrl);

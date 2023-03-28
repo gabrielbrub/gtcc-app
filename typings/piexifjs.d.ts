@@ -3,7 +3,7 @@ declare module 'piexifjs' {
     export function dump(jpegData: any): string;
     export function insert(exifStr: string, dataUrl: string): string;
     export const ImageIFD: {
-      ImageDescription: number;
+      Artist: number;
       Copyright: number;
       XPTitle: number;
       XPComment: number;
