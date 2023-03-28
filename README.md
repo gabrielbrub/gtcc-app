@@ -44,7 +44,17 @@ Preencha os dados conforme a url do RPC server indicado no Ganache, e 1337 em "I
 
 - Conecte sua carteira Metamask a um dos endereços gerados no Ganache. Para isso, clique no avatar no canto superior direito da extensão Metamask, e em seguida em Importar Conta. Será solicitada uma chave privada. Para obtê-la, no Ganache, clique em um dos ícones de chave que localizado ao lado de cada endereço e copie a chave privada.
 
-<img src="tutorial/ganache.png">
+<table>
+  <tr>
+    <td>
+      <img src="tutorial/ganache.png">
+    </td>
+    <td>
+      <img src="https://user-images.githubusercontent.com/39782113/228107834-8af156d0-402a-4843-a4a9-a12760870bb4.png">
+    </td>
+  </tr>
+</table>
+
 
 - Para publicar conteúdos usando seu nó local IPFS, você deve liberar os métodos PUT e POST nas configurações
 
