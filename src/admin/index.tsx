@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
@@ -200,6 +200,33 @@ const Admin = () => {
         return <></>;
     }
 
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+    useEffect(() => {
+      const handleFileInputChange = (event: Event) => {
+        const target = event.target as HTMLInputElement;
+        const file = target.files?.[0];
+  
+        if (file) {
+          if(file.type !== 'image/jpeg') {
+            alert("This application does not support adding metadata to the provided file type."
+            + " If you don't want to rely on the IPFS-stored metadata, make sure to set the appropriate file metadata before publishing it.");
+          }
+        } 
+      };
+  
+      const fileInput = fileInputRef.current;
+      if (fileInput) {
+        fileInput.addEventListener('change', handleFileInputChange);
+      }
+  
+      return () => {
+        if (fileInput) {
+          fileInput.removeEventListener('change', handleFileInputChange);
+        }
+      };
+    }, [showNewContentModal]);
+
     useEffect(() => {
         const author = storedValue.find((contract: AuthorDetails) => contract.contractData.address === authorAddress);
         if (author && isOnline && signerAddress) {
@@ -266,7 +293,7 @@ const Admin = () => {
                                 File
                             </label>
                             <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                required name="file" id="file" type="file" accept="image/*,video/*" />
+                                required name="file" id="file" type="file" accept="image/*,video/*" ref={fileInputRef} />
                         </div>
                         <div className="flex justify-end">
                             <button type="button" className="py-2 mr-2 px-4 bg-red-600 text-white rounded-md hover:bg-red-700"
