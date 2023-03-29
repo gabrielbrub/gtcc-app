@@ -16,20 +16,18 @@ export const App = () => {
     const [provider, signer, isOnlineEth, signerAddress, getEventDate] = useEth();
 
     return (
-        <React.StrictMode>
-            <EthContext.Provider value={{ provider, signer, isOnlineEth, signerAddress, getEventDate }}>
-                <IPFSContext.Provider value={{ ipfs, isOnline, getFile }}>
-                    <HashRouter>
-                        <Routes>
-                            <Route path="/" element={<Home />} />
-                            <Route path="/:authorAddress" element={<AuthorPage />} />
-                            <Route path="/admin/:authorAddress" element={<AdminWrapper />} />
-                            <Route path="/admin" element={<ContractSelection />} />
-                            <Route path="/deploy" element={<Deploy />} />
-                        </Routes>
-                    </HashRouter>
-                </IPFSContext.Provider>
-            </EthContext.Provider>
-        </React.StrictMode>
+        <EthContext.Provider value={{ provider, signer, isOnlineEth, signerAddress, getEventDate }}>
+            <IPFSContext.Provider value={{ ipfs, isOnline, getFile }}>
+                <HashRouter>
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/:authorAddress" element={<AuthorPage />} />
+                        <Route path="/admin/:authorAddress" element={<AdminWrapper />} />
+                        <Route path="/admin" element={<ContractSelection />} />
+                        <Route path="/deploy" element={<Deploy />} />
+                    </Routes>
+                </HashRouter>
+            </IPFSContext.Provider>
+        </EthContext.Provider>
     );
 }

@@ -1,11 +1,10 @@
 import { ethers } from "ethers";
-import { useEffect, useState } from "react";
+import {  useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useEthContext } from "../components/EthContext";
 import { IpfsButton } from "../components/IpfsButton";
 import { useIPFSContext } from "../components/ipfsContext";
 import Navbar from "../components/navBar";
-import { useEth } from "../components/useEth";
 import { useLocalStorage } from "../components/useLocalStorage";
 import { authorAbi } from "../ContractsData";
 import { defaultIpfsGateway } from "../globals";
@@ -121,10 +120,10 @@ const AuthorPage = () => {
                 </div>}
                 <hr className='mt-3 mb-3'></hr>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                    {contents.sort(compareByDate).map((content: Content) => {
+                    {contents.sort(compareByDate).map((content: Content, index: number) => {
                         return (
                             <div className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer"
-                                key={content.contentCid}
+                                key={index}
                                 onClick={() => {
                                     const url = defaultIpfsGateway + content.contentCid;
                                     window.open(url);
