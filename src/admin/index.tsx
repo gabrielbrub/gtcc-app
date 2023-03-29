@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
@@ -13,6 +13,8 @@ import { authorAbi } from "../ContractsData";
 import { defaultIpfsGateway } from "../globals";
 import { AuthorDetails, Content, ContentMetadata } from "../types";
 import { compareByDate, formatDate, promiseWithTimeout } from "../utils";
+import * as piexif from 'piexifjs';
+import { Buffer } from 'buffer';
 
 const Admin = () => {
     const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
@@ -98,13 +100,53 @@ const Admin = () => {
         return await pinContentToIPFS(metadataFile);
     }
 
+    function readFileAsDataURL(file: File): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                resolve(event.target?.result as string);
+            };
+            reader.onerror = function (error) {
+                reject(error);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+
+    function dataURLtoBlob(dataUrl: string): Blob {
+        const binary = atob(dataUrl.split(',')[1]);
+        const array = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+            array[i] = binary.charCodeAt(i);
+        }
+        return new Blob([array], { type: 'image/jpeg' });
+    }
+
     const publishContent = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
         setLoading(true);
         try {
             const formData = new FormData(e.currentTarget);
             const data = Object.fromEntries(formData);
-            const contentCid = await pinContentToIPFS(data.file as File);
+
+            let fileToPin = data.file as File;
+            if (fileToPin.type === "image/jpeg") {
+                const dataUrl = await readFileAsDataURL(data.file as File);
+                const jpegData = piexif.load(dataUrl);
+
+
+                jpegData["0th"][piexif.ImageIFD.XPComment] = [...Buffer.from(data.description as string, 'ucs2')];
+                jpegData["0th"][piexif.ImageIFD.Copyright] = data.license as string;
+                jpegData["0th"][piexif.ImageIFD.XPTitle] = [...Buffer.from(data.title as string, 'ucs2')];
+                jpegData["0th"][piexif.ImageIFD.Artist] = authorDetails?.name;
+
+                const newDataUrl = piexif.insert(piexif.dump(jpegData), dataUrl);
+                const modifiedImageBlob = dataURLtoBlob(newDataUrl);
+                fileToPin = new File([modifiedImageBlob], modifiedImageBlob.name, { type: "image/jpeg" });
+            }
+            const contentCid = await pinContentToIPFS(fileToPin);
+
             const contentMetadata = {
                 'title': data.title,
                 'description': data.description,
@@ -158,6 +200,33 @@ const Admin = () => {
         }
         return <></>;
     }
+
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+    useEffect(() => {
+      const handleFileInputChange = (event: Event) => {
+        const target = event.target as HTMLInputElement;
+        const file = target.files?.[0];
+  
+        if (file) {
+          if(file.type !== 'image/jpeg') {
+            alert("This application does not support adding metadata to the provided file type."
+            + " If you don't want to rely on the IPFS-stored metadata, make sure to set the appropriate file metadata before publishing it.");
+          }
+        } 
+      };
+  
+      const fileInput = fileInputRef.current;
+      if (fileInput) {
+        fileInput.addEventListener('change', handleFileInputChange);
+      }
+  
+      return () => {
+        if (fileInput) {
+          fileInput.removeEventListener('change', handleFileInputChange);
+        }
+      };
+    }, [showNewContentModal]);
 
     useEffect(() => {
         const author = storedValue.find((contract: AuthorDetails) => contract.contractData.address === authorAddress);
@@ -226,7 +295,7 @@ const Admin = () => {
                                 File
                             </label>
                             <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                required name="file" id="file" type="file" accept="image/*,video/*" />
+                                required name="file" id="file" type="file" accept="image/*,video/*" ref={fileInputRef} />
                         </div>
                         <div className="flex justify-end">
                             <button type="button" className="py-2 mr-2 px-4 bg-red-600 text-white rounded-md hover:bg-red-700"
