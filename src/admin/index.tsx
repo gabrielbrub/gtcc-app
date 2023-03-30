@@ -76,7 +76,7 @@ const Admin = () => {
 
     const loadContentsFromBlockchain = async () => {
         const authorContract = new ethers.Contract(authorAddress!, authorAbi, signer);
-        const filter = authorContract.filters.PublishEventCC(null, null, null, null);
+        const filter = authorContract.filters.PublishEvent(null, null, null, null);
         const query = await authorContract.queryFilter(filter);
         parseQueryResultsAndUpdateComponentState(query);
     }
@@ -157,7 +157,7 @@ const Admin = () => {
 
             if (authorAddress) {
                 const authorContract = new ethers.Contract(authorAddress, authorAbi, signer);
-                await authorContract.publishCC(
+                await authorContract.publish(
                     ethers.utils.formatBytes32String((data.file as File).type),
                     ethers.utils.formatBytes32String(data.license as string),
                     contentCid,
@@ -175,9 +175,9 @@ const Admin = () => {
                         text: " Please wait for confirmation. Reload the page in a few minutes and" +
                             " you should be able to see it."
                     });
-                    authorContract.off("PublishEventCC", eventListener);
+                    authorContract.off("PublishEvent", eventListener);
                 };
-                authorContract.on("PublishEventCC", eventListener);
+                authorContract.on("PublishEvent", eventListener);
             }
         } catch (e) {
             console.error(e);

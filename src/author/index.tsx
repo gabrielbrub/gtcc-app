@@ -69,7 +69,7 @@ const AuthorPage = () => {
 
     const loadContentsFromBlockchain = async () => {
         const authorContract = new ethers.Contract(authorAddress!, authorAbi, provider);
-        const filter = authorContract.filters.PublishEventCC(null, null, null, null);
+        const filter = authorContract.filters.PublishEvent(null, null, null, null);
         const query = await authorContract.queryFilter(filter);
         parseQueryResultsAndUpdateComponentState(query);
     }
