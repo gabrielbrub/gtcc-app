@@ -85,11 +85,11 @@ const Deploy = () => {
 
     const metadataFile = new File([JSON.stringify(
       {
-        "version": "0.0.1",
+        "version": "0.1.0",
         "name": name,
         "email": email,
       }
-    )], "marco-zero.json", { type: 'application/json' });
+    )], "author-metadata.json", { type: 'application/json' });
 
 
     const fileAdded = await ipfs.add(metadataFile);
