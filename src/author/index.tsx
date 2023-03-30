@@ -76,7 +76,7 @@ const AuthorPage = () => {
 
     useEffect(() => {
         const author = storedValue.find((contract: AuthorDetails) => contract.contractData.address === authorAddress);
-        if (author && provider && isOnline) {
+        if (author && provider && isOnline && contents.length === 0) {
             setAuthorDetails(storedValue.find((contract: AuthorDetails) => contract.contractData.address === authorAddress));
             loadContentsFromBlockchain();
         }
