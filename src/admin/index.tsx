@@ -172,7 +172,7 @@ const Admin = () => {
                             showConfirmButton: false,
                             timer: 3000,
                             title: "Content published.",
-                            text: " Reload the page in a few shortly and" +
+                            text: " Reload the page shortly and" +
                                 " you should be able to see it."
                         });
                         authorContract.off("PublishEvent", eventListener);
