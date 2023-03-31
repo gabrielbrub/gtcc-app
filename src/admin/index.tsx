@@ -233,16 +233,16 @@ const Admin = () => {
 
     useEffect(() => {
         const author = storedValue.find((contract: AuthorDetails) => contract.contractData.address === authorAddress);
-        if (author && isOnline && signerAddress) {
+        if (author && isOnline && signerAddress && contents.length === 0) {
             setAuthorDetails(storedValue.find((contract: AuthorDetails) => contract.contractData.address === authorAddress));
             loadContentsFromBlockchain();
         }
     }, [signerAddress, isOnline]);
 
     return (
-        <div>
+        <div className="flex flex-col min-h-screen">
             <Navbar />
-            <main className='max-w-screen-lg mx-auto mb-4'>
+            <main className='max-w-screen-lg mx-auto mb-4 flex-grow'>
                 <div className='flex flex-row mt-1 justify-between'>
                     <IpfsButton />
                     <EthLabel signerAddress={signerAddress} />
@@ -340,7 +340,7 @@ const Admin = () => {
 
                 </div>
             </main>
-            <footer className='absolute bottom-0 w-full text-center'><small>@gTCC 2023</small></footer>
+            <footer className='w-full text-center py-2'><small>@gTCC 2023</small></footer>
         </div>
     );
 };
