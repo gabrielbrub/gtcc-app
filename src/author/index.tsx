@@ -142,6 +142,7 @@ const AuthorPage = () => {
                     })}
                 </div>
             </main>
+            <footer className='absolute bottom-0 w-full text-center'><small>@gTCC 2023</small></footer>
         </div>
     );
 }
