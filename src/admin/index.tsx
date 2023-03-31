@@ -19,7 +19,7 @@ import { Buffer } from 'buffer';
 const Admin = () => {
     const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
     const { ipfs, isOnline, getFile } = useContext(IPFSContext);
-    const { signerAddress, signer, getEventDate } = useEthContext();
+    const { signerAddress, signer, isOnlineEth, getEventDate } = useEthContext();
     const [showNewContentModal, setShowNewContentModal] = useState<boolean>(false);
     const { authorAddress } = useParams();
     const [authorDetails, setAuthorDetails] = useState<AuthorDetails>();
@@ -70,7 +70,6 @@ const Admin = () => {
             }
             newContents.push(content);
         }
-        setContents(newContents);
     }
 
 
@@ -125,65 +124,69 @@ const Admin = () => {
 
     const publishContent = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
-        setLoading(true);
-        try {
-            const formData = new FormData(e.currentTarget);
-            const data = Object.fromEntries(formData);
+        if (isOnline && isOnlineEth) {
+            setLoading(true);
+            try {
+                const formData = new FormData(e.currentTarget);
+                const data = Object.fromEntries(formData);
 
-            let fileToPin = data.file as File;
-            if (fileToPin.type === "image/jpeg") {
-                const dataUrl = await readFileAsDataURL(data.file as File);
-                const jpegData = piexif.load(dataUrl);
+                let fileToPin = data.file as File;
+                if (fileToPin.type === "image/jpeg") {
+                    const dataUrl = await readFileAsDataURL(data.file as File);
+                    const jpegData = piexif.load(dataUrl);
 
 
-                jpegData["0th"][piexif.ImageIFD.XPComment] = [...Buffer.from(data.description as string, 'ucs2')];
-                jpegData["0th"][piexif.ImageIFD.Copyright] = data.license as string;
-                jpegData["0th"][piexif.ImageIFD.XPTitle] = [...Buffer.from(data.title as string, 'ucs2')];
-                jpegData["0th"][piexif.ImageIFD.Artist] = authorDetails?.name;
+                    jpegData["0th"][piexif.ImageIFD.XPComment] = [...Buffer.from(data.description as string, 'ucs2')];
+                    jpegData["0th"][piexif.ImageIFD.Copyright] = data.license as string;
+                    jpegData["0th"][piexif.ImageIFD.XPTitle] = [...Buffer.from(data.title as string, 'ucs2')];
+                    jpegData["0th"][piexif.ImageIFD.Artist] = authorDetails?.name;
 
-                const newDataUrl = piexif.insert(piexif.dump(jpegData), dataUrl);
-                const modifiedImageBlob = dataURLtoBlob(newDataUrl);
-                fileToPin = new File([modifiedImageBlob], modifiedImageBlob.name, { type: "image/jpeg" });
-            }
-            const contentCid = await pinContentToIPFS(fileToPin);
+                    const newDataUrl = piexif.insert(piexif.dump(jpegData), dataUrl);
+                    const modifiedImageBlob = dataURLtoBlob(newDataUrl);
+                    fileToPin = new File([modifiedImageBlob], modifiedImageBlob.name, { type: "image/jpeg" });
+                }
+                const contentCid = await pinContentToIPFS(fileToPin);
 
-            const contentMetadata = {
-                'title': data.title,
-                'description': data.description,
-                'contentCid': contentCid,
-                'authorAddress': authorAddress,
-            };
-            const metadataCid = await pinMetadataToIPFS(contentMetadata);
-
-            if (authorAddress) {
-                const authorContract = new ethers.Contract(authorAddress, authorAbi, signer);
-                await authorContract.publish(
-                    ethers.utils.formatBytes32String((data.file as File).type),
-                    ethers.utils.formatBytes32String(data.license as string),
-                    contentCid,
-                    metadataCid,
-                );
-                const eventListener = async (eventArgs: any) => {
-                    setShowNewContentModal(false);
-                    setLoading(false);
-                    console.log('Event received:', eventArgs);
-                    MySwal.fire({
-                        icon: 'success',
-                        showConfirmButton: false,
-                        timer: 3000,
-                        title: "Transaction sent.",
-                        text: " Please wait for confirmation. Reload the page in a few minutes and" +
-                            " you should be able to see it."
-                    });
-                    authorContract.off("PublishEvent", eventListener);
+                const contentMetadata = {
+                    'title': data.title,
+                    'description': data.description,
+                    'contentCid': contentCid,
+                    'authorAddress': authorAddress,
                 };
-                authorContract.on("PublishEvent", eventListener);
+                const metadataCid = await pinMetadataToIPFS(contentMetadata);
+
+                if (authorAddress) {
+                    const authorContract = new ethers.Contract(authorAddress, authorAbi, signer);
+                    await authorContract.publish(
+                        ethers.utils.formatBytes32String((data.file as File).type),
+                        ethers.utils.formatBytes32String(data.license as string),
+                        contentCid,
+                        metadataCid,
+                    );
+                    const eventListener = async (eventArgs: any) => {
+                        setShowNewContentModal(false);
+                        setLoading(false);
+                        console.log('Event received:', eventArgs);
+                        MySwal.fire({
+                            icon: 'success',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            title: "Content published.",
+                            text: " Reload the page in a few shortly and" +
+                                " you should be able to see it."
+                        });
+                        authorContract.off("PublishEvent", eventListener);
+                    };
+                    authorContract.on("PublishEvent", eventListener);
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Something went wrong");
+                setShowNewContentModal(false);
+                setLoading(false);
             }
-        } catch (e) {
-            console.error(e);
-            alert("Something went wrong");
-            setShowNewContentModal(false);
-            setLoading(false);
+        } else {
+            alert("Error. Please check your connection to IPFS and Ethereum.")
         }
     };
 
@@ -204,28 +207,28 @@ const Admin = () => {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     useEffect(() => {
-      const handleFileInputChange = (event: Event) => {
-        const target = event.target as HTMLInputElement;
-        const file = target.files?.[0];
-  
-        if (file) {
-          if(file.type !== 'image/jpeg') {
-            alert("This application does not support adding metadata to the provided file type."
-            + " If you don't want to rely on the IPFS-stored metadata, make sure to set the appropriate file metadata before publishing it.");
-          }
-        } 
-      };
-  
-      const fileInput = fileInputRef.current;
-      if (fileInput) {
-        fileInput.addEventListener('change', handleFileInputChange);
-      }
-  
-      return () => {
+        const handleFileInputChange = (event: Event) => {
+            const target = event.target as HTMLInputElement;
+            const file = target.files?.[0];
+
+            if (file) {
+                if (file.type !== 'image/jpeg') {
+                    alert("This application does not support adding metadata to the provided file type."
+                        + " If you don't want to rely on the IPFS-stored metadata, make sure to set the appropriate file metadata before publishing it.");
+                }
+            }
+        };
+
+        const fileInput = fileInputRef.current;
         if (fileInput) {
-          fileInput.removeEventListener('change', handleFileInputChange);
+            fileInput.addEventListener('change', handleFileInputChange);
         }
-      };
+
+        return () => {
+            if (fileInput) {
+                fileInput.removeEventListener('change', handleFileInputChange);
+            }
+        };
     }, [showNewContentModal]);
 
     useEffect(() => {
@@ -281,7 +284,7 @@ const Admin = () => {
                             <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                 name="license" required id="license" type="text" placeholder="License type" />
                             <a href="https://creativecommons.org/choose/" target="_blank"
-                            className="text-sm text-blue-500 hover:text-blue-700">Go to Creative Commons license chooser</a>
+                                className="text-sm text-blue-500 hover:text-blue-700">Go to Creative Commons license chooser</a>
                         </div>
                         <div className="mb-4">
                             <label className="block text-gray-700 font-bold mb-2" htmlFor="description">
@@ -316,12 +319,12 @@ const Admin = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {contents.sort(compareByDate).map((content: Content) => {
                         return (
-                            <div className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer" 
-                            key={content.contentCid}
-                            onClick={() => {
-                                const url = defaultIpfsGateway + content.contentCid;
-                                window.open(url);
-                            }}>
+                            <div className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer"
+                                key={content.contentCid}
+                                onClick={() => {
+                                    const url = defaultIpfsGateway + content.contentCid;
+                                    window.open(url);
+                                }}>
                                 <div className="w-full h-[300px] overflow-hidden">
                                     {renderContentAccordingToMimeType(content)}
                                 </div>

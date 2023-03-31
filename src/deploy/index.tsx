@@ -14,7 +14,7 @@ import { useEthContext } from "../components/EthContext";
 
 const Deploy = () => {
   const { ipfs, isOnline } = useContext(IPFSContext);
-  const { signerAddress, signer } = useEthContext();
+  const { signerAddress, signer, isOnlineEth } = useEthContext();
   const [storedValue, setValue] = useLocalStorage<AuthorDetails[]>("@gtcc-author-addresses", []);
   const MySwal = withReactContent(Swal);
   const navigate = useNavigate();
@@ -41,38 +41,42 @@ const Deploy = () => {
 
 
   const submitForm = async (e: React.FormEvent<HTMLFormElement>) => {
-    setLoading(true);
-    try {
-      const formData = new FormData(e.currentTarget);
-      const data = Object.fromEntries(formData);
-      const cid = await pinContentToIPFS(data.name as string, data.email as string);
-      const address = await deployAuthorContract(cid);
-      setLoading(false);
-      MySwal.fire({
-        title: <p>Contract Deployed</p>,
-        html: <span>The author contract was deployed and can be accessed by its address: <b>{address}</b> <br />
-          The associated metadata file has the following CID: <br /><b>{cid}</b></span>,
-        willClose: () => {
-          if (storedValue.filter((contract: AuthorDetails) => contract.contractData.owner === signerAddress).length > 1) {
-            navigate('/admin');
-          } else {
-            navigate('/admin/' + address);
+    if (isOnline && isOnlineEth) {
+      setLoading(true);
+      try {
+        const formData = new FormData(e.currentTarget);
+        const data = Object.fromEntries(formData);
+        const cid = await pinContentToIPFS(data.name as string, data.email as string);
+        const address = await deployAuthorContract(cid);
+        setLoading(false);
+        MySwal.fire({
+          title: <p>Contract Deployed</p>,
+          html: <span>The author contract was deployed and can be accessed by its address: <b>{address}</b> <br />
+            The associated metadata file has the following CID: <br /><b>{cid}</b></span>,
+          willClose: () => {
+            if (storedValue.filter((contract: AuthorDetails) => contract.contractData.owner === signerAddress).length > 1) {
+              navigate('/admin');
+            } else {
+              navigate('/admin/' + address);
+            }
           }
-        }
-      });
-      const newObj = {
-        owner: signerAddress,
-        address: address,
-        metadata: cid,
-      };
-      const contractDetails = {
-        contractData: newObj,
-        name: data.name as string,
-        email: data.email as string,
-      };
-      setValue([...storedValue, contractDetails]);
-    } catch (e) {
-      alert("Error while deploying author");
+        });
+        const newObj = {
+          owner: signerAddress,
+          address: address,
+          metadata: cid,
+        };
+        const contractDetails = {
+          contractData: newObj,
+          name: data.name as string,
+          email: data.email as string,
+        };
+        setValue([...storedValue, contractDetails]);
+      } catch (e) {
+        alert(`Error while deploying author: ${e}`);
+      }
+    } else {
+      alert("Error. Please check your connection to IPFS and Ethereum.")
     }
     setLoading(false);
   }

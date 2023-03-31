@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
+import { promiseWithTimeout } from '../utils';
 import { useSessionStorage } from 'usehooks-ts';
 
 export const useEth = (requestSigner: boolean = true): [ethers.providers.Web3Provider |
@@ -39,33 +40,30 @@ export const useEth = (requestSigner: boolean = true): [ethers.providers.Web3Pro
 
   const connectToProvider = (): ethers.providers.Web3Provider | undefined => {
     if (typeof window.ethereum !== "undefined" && provider === undefined) {
-      console.log("conectando a provider...");
+      console.log("connecting to provider...");
       let providerLocal = new ethers.providers.Web3Provider(
         window.ethereum,
         "any"
       );
       setProvider(providerLocal);
-      console.log("conectado a provider");
+      console.log("connected to provider");
       return providerLocal;
     }
   }
 
   const connectToSigner = async (providerParam?: ethers.providers.Web3Provider): Promise<ethers.providers.JsonRpcSigner | undefined> => {
-    console.log('conectando a signer...');
+    console.log('connecting to signer...');
     if (requestSigner) {
       if (provider || providerParam) {
         const providerPick = providerParam || provider;
         await providerPick!.send('eth_requestAccounts', []);
         let signerLocal = providerPick!.getSigner();
-        const signerAddress = await signerLocal.getAddress();
-        console.log('Account: ', signerAddress);
-        console.log('conectado a signer');
         setSigner(signerLocal);
         setIsOnlineEth(true);
         return signerLocal;
       } else {
         connectToProvider();
-        console.warn('Instalar metamask');
+        console.warn('ethers not found');
       }
     }
     return undefined;
@@ -102,23 +100,23 @@ export const useEth = (requestSigner: boolean = true): [ethers.providers.Web3Pro
     if (provider) {
       const interval = setInterval(async () => {
         if (provider) {
-          provider.getNetwork().then(network => {
-            console.log(`Connected to network ${network.name}`)
+          try {
+            await promiseWithTimeout<number>(provider.getBlockNumber(), 15000);
+            console.log(`Connected to ethereum blockchain`);
             setIsOnlineEth(true);
-
-          }).catch(error => {
-            console.error(`Error getting network: ${error}`)
+          } catch (error) {
+            console.error(`Not connected to ethereum network: ${error}`);
             setSigner(undefined);
             setIsOnlineEth(false);
             if (requestSigner) {
               connectToSigner();
             }
-          })
+          }
         } else {
           console.error('Metamask provider not detected');
           connectToProvider();
         }
-      }, 10000);
+      }, 30000);
 
       return () => clearInterval(interval);
     }
