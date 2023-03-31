@@ -74,9 +74,9 @@ export const Home = (): JSX.Element => {
         asyncFunc();
     }
 
-    return <div>
+    return <div className="flex flex-col min-h-screen">
         <Navbar />
-        <main className='max-w-screen-lg mx-auto'>
+        <main className='max-w-screen-lg mx-auto flex-grow w-full'>
 
             <div className='flex flex-row mt-1 justify-between'>
                 <IpfsButton />
@@ -132,6 +132,6 @@ export const Home = (): JSX.Element => {
 
             </div>
         </main>
-        <footer className='absolute bottom-0 w-full text-center'><small>@gTCC 2023</small></footer>
+        <footer className='w-full text-center py-2'><small>@gTCC 2023</small></footer>
     </div>;
 }

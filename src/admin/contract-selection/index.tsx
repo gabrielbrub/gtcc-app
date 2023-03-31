@@ -91,7 +91,7 @@ const ContractSelection = () => {
     return (
         <div className="flex flex-col min-h-screen">
             <Navbar />
-            <main className='max-w-screen-lg mx-auto flex-grow'>
+            <main className='max-w-screen-lg w-full mx-auto flex-grow'>
                 <h1 className='font-semibold my-2'>Deployed contracts</h1>
                 <form className="flex items-center bg-gray-100 p-4 rounded-md max-w-[50%]" onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
                     e.preventDefault();
