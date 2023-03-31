@@ -171,7 +171,7 @@ const Admin = () => {
                             icon: 'success',
                             showConfirmButton: false,
                             timer: 3000,
-                            title: "Content published.",
+                            title: "Content published",
                             text: " Reload the page shortly and" +
                                 " you should be able to see it."
                         });
