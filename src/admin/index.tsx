@@ -47,28 +47,28 @@ const Admin = () => {
     }
 
     const parseQueryResultsAndUpdateComponentState = async (queryResult: any[]) => {
-        const newContents = [];
         for (const event of queryResult) {
-            const contentFile = await getFile(event.args.contentCid);
-            let contentMetadata;
-            try {
-                contentMetadata = await promiseWithTimeout(getMetadataFromIpfs(event.args.metadataCid), 20000);
-            } catch (e) {
-                console.error(e);
-            }
-            const content = {
-                mimeType: ethers.utils.parseBytes32String(event.args.mimeType),
-                licenseType: ethers.utils.parseBytes32String(event.args.licenseType),
-                contentCid: event.args.contentCid,
-                metadataCid: event.args.metadataCid,
-                date: formatDate(await getEventDate(event)),
-                contractData: {
-                    contentUrl: URL.createObjectURL(contentFile),
-                    content: contentFile,
-                    metadata: contentMetadata,
-                },
-            }
-            newContents.push(content);
+            getFile(event.args.contentCid).then(async (contentFile: File) => {
+                let contentMetadata;
+                try {
+                    contentMetadata = await promiseWithTimeout(getMetadataFromIpfs(event.args.metadataCid), 15000);
+                } catch (e) {
+                    console.error(e);
+                }
+                const content = {
+                    mimeType: ethers.utils.parseBytes32String(event.args.mimeType),
+                    licenseType: ethers.utils.parseBytes32String(event.args.licenseType),
+                    contentCid: event.args.contentCid,
+                    metadataCid: event.args.metadataCid,
+                    date: formatDate(await getEventDate(event)),
+                    contractData: {
+                        contentUrl: URL.createObjectURL(contentFile),
+                        content: contentFile,
+                        metadata: contentMetadata,
+                    },
+                }
+                setContents(prev => [content, ...prev]);
+            });
         }
     }
 
