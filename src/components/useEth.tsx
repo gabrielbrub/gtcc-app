@@ -56,11 +56,22 @@ export const useEth = (requestSigner: boolean = true): [ethers.providers.Web3Pro
     if (requestSigner) {
       if (provider || providerParam) {
         const providerPick = providerParam || provider;
-        await providerPick!.send('eth_requestAccounts', []);
-        let signerLocal = providerPick!.getSigner();
-        setSigner(signerLocal);
-        setIsOnlineEth(true);
-        return signerLocal;
+        try {
+          await promiseWithTimeout<number>(providerPick!.getBlockNumber(), 15000);
+          console.log(`Connected to ethereum blockchain`);
+          await providerPick!.send('eth_requestAccounts', []);
+          let signerLocal = providerPick!.getSigner();
+          setSigner(signerLocal);
+          setIsOnlineEth(true);
+          return signerLocal;
+        } catch (error) {
+          console.error(`Not connected to ethereum network: ${error}`);
+          setSigner(undefined);
+          setIsOnlineEth(false);
+          if (requestSigner) {
+            connectToSigner();
+          }
+        }
       } else {
         connectToProvider();
         console.warn('ethers not found');
@@ -103,7 +114,11 @@ export const useEth = (requestSigner: boolean = true): [ethers.providers.Web3Pro
           try {
             await promiseWithTimeout<number>(provider.getBlockNumber(), 15000);
             console.log(`Connected to ethereum blockchain`);
-            setIsOnlineEth(true);
+            if (signer) {
+              setIsOnlineEth(true);
+            } else {
+              connectToSigner();
+            }
           } catch (error) {
             console.error(`Not connected to ethereum network: ${error}`);
             setSigner(undefined);
