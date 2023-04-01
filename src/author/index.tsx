@@ -99,7 +99,7 @@ const AuthorPage = () => {
     return (
         <div className="flex flex-col min-h-screen">
             <Navbar />
-            <main className='max-w-screen-lg mx-auto mb-4 flex-grow'>
+            <main className='max-w-screen-lg w-full mx-auto mb-4 flex-grow'>
                 <div className='flex flex-row mt-1 justify-between'>
                     <IpfsButton />
                 </div>

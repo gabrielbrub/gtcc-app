@@ -18,7 +18,7 @@ export const App = () => {
     return (
         <EthContext.Provider value={{ provider, signer, isOnlineEth, signerAddress, getEventDate }}>
             <IPFSContext.Provider value={{ ipfs, isOnline, getFile }}>
-                <HashRouter>
+                <HashRouter basename="/">
                     <Routes>
                         <Route path="/" element={<Home />} />
                         <Route path="/:authorAddress" element={<AuthorPage />} />

@@ -153,7 +153,7 @@ const Deploy = () => {
           </div>
         </div>
       </main>
-      <footer className='absolute bottom-0 w-full text-center'><small>@gTCC 2023</small></footer>
+      <footer className='absolute bottom-0 w-full text-center py-2'><small>@gTCC 2023</small></footer>
     </div>
   );
 };
