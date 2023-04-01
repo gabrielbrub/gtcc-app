@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { promiseWithTimeout } from '../utils';
 import { useSessionStorage } from 'usehooks-ts';
 
@@ -10,6 +10,7 @@ export const useEth = (requestSigner: boolean = true): [ethers.providers.Web3Pro
   const [provider, setProvider] = useState<ethers.providers.Web3Provider>();
   const [signer, setSigner] = useState<ethers.providers.JsonRpcSigner>();
   const [signerAddress, setSignerAddress] = useSessionStorage<string>("@gtcc-signer-address", '');
+  const signerRef = useRef<ethers.providers.JsonRpcSigner | null>(null);
 
 
   useEffect(() => {
@@ -62,11 +63,13 @@ export const useEth = (requestSigner: boolean = true): [ethers.providers.Web3Pro
           await providerPick!.send('eth_requestAccounts', []);
           let signerLocal = providerPick!.getSigner();
           setSigner(signerLocal);
+          signerRef.current = signerLocal;
           setIsOnlineEth(true);
           return signerLocal;
         } catch (error) {
           console.error(`Not connected to ethereum network: ${error}`);
           setSigner(undefined);
+          signerRef.current = null;
           setIsOnlineEth(false);
           if (requestSigner) {
             connectToSigner();
@@ -89,6 +92,7 @@ export const useEth = (requestSigner: boolean = true): [ethers.providers.Web3Pro
       if (newSigner && newSignerAddress) {
         setSignerAddress(newSignerAddress);
         setSigner(newSigner);
+        signerRef.current = newSigner;
       }
     }
   };
@@ -114,14 +118,16 @@ export const useEth = (requestSigner: boolean = true): [ethers.providers.Web3Pro
           try {
             await promiseWithTimeout<number>(provider.getBlockNumber(), 15000);
             console.log(`Connected to ethereum blockchain`);
-            if (signer) {
+            if (signerRef.current) {
               setIsOnlineEth(true);
             } else {
+              console.log("NCTSIGNER");
               connectToSigner();
             }
           } catch (error) {
             console.error(`Not connected to ethereum network: ${error}`);
             setSigner(undefined);
+            signerRef.current = null;
             setIsOnlineEth(false);
             if (requestSigner) {
               connectToSigner();
@@ -131,7 +137,7 @@ export const useEth = (requestSigner: boolean = true): [ethers.providers.Web3Pro
           console.error('Metamask provider not detected');
           connectToProvider();
         }
-      }, 30000);
+      }, 10000);
 
       return () => clearInterval(interval);
     }

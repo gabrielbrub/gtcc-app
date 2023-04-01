@@ -35,7 +35,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onRequestClose })
     setProtocol(value.protocol);
     setProjectId(value.projectId);
     setApiSecret(value.apiSecret);
-  }, [value]);
+  }, [value, isOpen]);
 
   const handleConfirm = async () => {
     setValue({
