@@ -7,7 +7,7 @@ export const EthLabel = (props: EthLabelProps): JSX.Element => {
     return (
         <>
             {props.signerAddress !== '' ?
-                <span className="font-medium text-sm">{`Connected wallet address: ${props.signerAddress}`}</span>
+                <span className="font-medium text-sm">{`Connected account address: ${props.signerAddress}`}</span>
                 :
                 <div className="flex flex-row items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"

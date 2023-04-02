@@ -137,7 +137,7 @@ export const useEth = (requestSigner: boolean = true): [ethers.providers.Web3Pro
           console.error('Metamask provider not detected');
           connectToProvider();
         }
-      }, 10000);
+      }, 30000);
 
       return () => clearInterval(interval);
     }

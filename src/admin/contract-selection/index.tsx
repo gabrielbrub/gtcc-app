@@ -54,8 +54,8 @@ const ContractSelection = () => {
                     const authorContract = new ethers.Contract(authorAddress, authorAbi, signer);
                     const ownerAddress = await authorContract.owner();
                     if (ownerAddress !== signerAddress) {
-                        alert("Target author contract owner address doesn't match the connected wallet address. The owner address is: " + ownerAddress
-                            + "\nAnd the connected wallet address is: " + signerAddress);
+                        alert("Target author contract owner address doesn't match the connected account address. The owner address is: " + ownerAddress
+                            + "\nAnd the connected account address is: " + signerAddress);
                         return;
                     }
                     const authorMetadataCid = await authorContract.metadata();
