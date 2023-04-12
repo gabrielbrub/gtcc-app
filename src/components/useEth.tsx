@@ -71,9 +71,6 @@ export const useEth = (requestSigner: boolean = true): [ethers.providers.Web3Pro
           setSigner(undefined);
           signerRef.current = null;
           setIsOnlineEth(false);
-          if (requestSigner) {
-            connectToSigner();
-          }
         }
       } else {
         connectToProvider();
