@@ -163,9 +163,11 @@ const Admin = () => {
                         contentCid,
                         metadataCid,
                     );
+                    console.log(Date.now());
                     const eventListener = async (eventArgs: any) => {
                         setShowNewContentModal(false);
                         setLoading(false);
+                        console.log(Date.now());
                         console.log('Event received:', eventArgs);
                         MySwal.fire({
                             icon: 'success',

@@ -29,13 +29,11 @@ const Deploy = () => {
     );
 
     let contract = await factory.deploy(cid);
-
-    console.log(contract.address);
-
-    console.log(contract.deployTransaction.hash);
-
+    console.log(Date.now());
     await contract.deployed();
-
+    console.log(Date.now());
+    console.log('Deployed contract address: ' + contract.address);
+    console.log('Deploy transaction hash: ' + contract.deployTransaction.hash);
     return contract.address;
   };
 
